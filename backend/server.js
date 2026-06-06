@@ -672,16 +672,20 @@ Write exactly 2–3 sentences. Describe the pattern in neutral, factual language
 app.get("/", (req, res) => res.sendFile(path.join(frontendPath, "index.html")));
 app.use((req, res) => res.sendFile(path.join(frontendPath, "index.html")));
 
-const PORT = process.env.PORT || 5001;
-const server = app.listen(PORT, () =>
-  console.log(`AURA Intelligence running at http://localhost:${PORT}`)
-);
+// Local dev: start HTTP server. Vercel imports this module and uses the default export.
+if (process.env.NODE_ENV !== "production") {
+  const PORT = process.env.PORT || 5001;
+  const server = app.listen(PORT, () =>
+    console.log(`AURA Intelligence running at http://localhost:${PORT}`)
+  );
+  server.on("error", (err) => {
+    if (err.code === "EADDRINUSE") {
+      console.error(`\n[AURA] Port ${PORT} is already in use.\nRun: pkill -f "node backend/server.js"\nThen: npm run dev\n`);
+    } else {
+      console.error("[AURA] Server error:", err.message);
+    }
+    process.exit(1);
+  });
+}
 
-server.on("error", (err) => {
-  if (err.code === "EADDRINUSE") {
-    console.error(`\n[AURA] Port ${PORT} is already in use.\nRun: pkill -f "node backend/server.js"\nThen: npm run dev\n`);
-  } else {
-    console.error("[AURA] Server error:", err.message);
-  }
-  process.exit(1);
-});
+export default app;
