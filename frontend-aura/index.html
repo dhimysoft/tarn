@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AURA Intelligence — Daily Check-In</title>
+  <meta name="description" content="AURA Intelligence: check in your daily wellness signals and get burnout risk forecasting, recovery analysis, and focus optimization — powered by DHIMLUX Labs." />
+  <meta property="og:title" content="AURA Intelligence — Wellness Intelligence Platform" />
+  <meta property="og:description" content="Deterministic wellness scoring, burnout risk forecasting, and AI advisory insights. Powered by DHIMLUX Labs." />
+  <meta property="og:type" content="website" />
+  <meta name="theme-color" content="#070316" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌙</text></svg>" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <canvas id="particle-bg"></canvas>
+
+  <nav class="navbar">
+    <div class="nav-brand">
+      <span class="brand-name">AURA</span>
+      <span class="brand-sub">Intelligence</span>
+    </div>
+    <div class="nav-links">
+      <a href="dashboard.html" class="nav-link">Dashboard</a>
+    </div>
+  </nav>
+
+  <main class="checkin-page">
+
+    <div class="checkin-header">
+      <h1><span id="greeting">Good morning</span>,</h1>
+      <p class="checkin-subtitle">Six signals · thirty seconds · real intelligence.</p>
+      <div id="streak-display" class="streak-badge">Start your streak — check in daily</div>
+    </div>
+
+    <form id="checkin-form" class="checkin-card">
+
+      <div class="signal-group">
+        <div class="signal-header">
+          <span class="signal-name">💤 Sleep Quality</span>
+          <span class="signal-value-label" id="sleep-label">Average</span>
+        </div>
+        <input type="range" id="sleep-slider" class="signal-slider" min="1" max="10" value="6" aria-label="Sleep Quality" aria-valuemin="1" aria-valuemax="10" aria-valuenow="6" />
+        <div class="slider-ends"><span>Poor</span><span>Excellent</span></div>
+      </div>
+
+      <div class="signal-group">
+        <div class="signal-header">
+          <span class="signal-name">😤 Stress Level</span>
+          <span class="signal-value-label stress-val" id="stress-label">Moderate</span>
+        </div>
+        <input type="range" id="stress-slider" class="signal-slider slider-stress" min="1" max="10" value="5" aria-label="Stress Level" aria-valuemin="1" aria-valuemax="10" aria-valuenow="5" />
+        <div class="slider-ends"><span>Calm</span><span>Overwhelmed</span></div>
+      </div>
+
+      <div class="signal-group">
+        <div class="signal-header">
+          <span class="signal-name">😊 Mood</span>
+          <span class="signal-value-label" id="mood-label">Average</span>
+        </div>
+        <input type="range" id="mood-slider" class="signal-slider" min="1" max="10" value="6" aria-label="Mood" aria-valuemin="1" aria-valuemax="10" aria-valuenow="6" />
+        <div class="slider-ends"><span>Very Low</span><span>Excellent</span></div>
+      </div>
+
+      <div class="signal-group">
+        <div class="signal-header">
+          <span class="signal-name">⚡ Energy</span>
+          <span class="signal-value-label" id="energy-label">Average</span>
+        </div>
+        <input type="range" id="energy-slider" class="signal-slider" min="1" max="10" value="6" aria-label="Energy Level" aria-valuemin="1" aria-valuemax="10" aria-valuenow="6" />
+        <div class="slider-ends"><span>Depleted</span><span>Peak</span></div>
+      </div>
+
+      <div class="signal-group">
+        <div class="signal-header">
+          <span class="signal-name">🎯 Focus</span>
+          <span class="signal-value-label" id="focus-label">Average</span>
+        </div>
+        <input type="range" id="focus-slider" class="signal-slider" min="1" max="10" value="6" aria-label="Focus Level" aria-valuemin="1" aria-valuemax="10" aria-valuenow="6" />
+        <div class="slider-ends"><span>Scattered</span><span>Sharp</span></div>
+      </div>
+
+      <div class="schedule-group">
+        <div class="schedule-label-title">📅 Today's Schedule</div>
+        <div class="schedule-inputs">
+          <label class="schedule-field">
+            <span>Study / Class (hrs)</span>
+            <input type="number" id="study-input" class="schedule-number" min="0" max="16" value="4" />
+          </label>
+          <label class="schedule-field">
+            <span>Work (hrs)</span>
+            <input type="number" id="work-input" class="schedule-number" min="0" max="16" value="0" />
+          </label>
+        </div>
+      </div>
+
+      <button type="submit" id="analyze-btn" class="analyze-btn">
+        Analyze My Wellness →
+      </button>
+
+    </form>
+
+    <p class="checkin-footer-note">
+      AURA Intelligence · Informational only. Not a substitute for professional health guidance.
+    </p>
+
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AURA Intelligence — Dashboard</title>
+  <meta name="description" content="AURA Intelligence dashboard: wellness score, burnout risk, recovery index, focus readiness, explainability, and AI advisory insights." />
+  <meta property="og:title" content="AURA Intelligence — Wellness Intelligence Platform" />
+  <meta property="og:description" content="Deterministic wellness scoring, burnout risk forecasting, and AI advisory insights. Powered by DHIMLUX Labs." />
+  <meta property="og:type" content="website" />
+  <meta name="theme-color" content="#070316" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌙</text></svg>" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <canvas id="particle-bg"></canvas>
+
+  <nav class="navbar">
+    <div class="nav-brand">
+      <span class="brand-name">AURA</span>
+      <span class="brand-sub">Intelligence</span>
+    </div>
+    <div class="nav-links">
+      <a href="index.html" class="nav-link checkin-cta">+ Check In</a>
+    </div>
+  </nav>
+
+  <div id="dashboard-root" class="dashboard-page">
+
+    <!-- ── Header ── -->
+    <div class="dash-header">
+      <div class="dash-date-row">
+        <div>
+          <div class="dash-date" id="today-date">Loading...</div>
+          <div class="dash-subtitle">Wellness Intelligence · Today</div>
+        </div>
+        <div class="streak-pill">
+          <span>🔥</span>
+          <span id="streak-count">0 days</span> streak
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Score Hero ── -->
+    <div class="score-hero">
+      <div class="score-hero-main">
+        <div class="score-ring">
+          <div class="score-number" id="score-value">0</div>
+          <div class="score-unit">/ 100</div>
+        </div>
+        <div class="score-meta">
+          <span class="tier-badge" id="score-tier">--</span>
+          <span class="score-delta" id="score-delta"></span>
+        </div>
+        <div class="score-label">Wellness Score</div>
+      </div>
+      <div class="score-confidence">
+        <div class="confidence-label">Confidence</div>
+        <div class="confidence-value" id="confidence-value">--%</div>
+        <div class="confidence-bar-wrap">
+          <div class="confidence-bar-fill" id="confidence-bar"></div>
+        </div>
+        <div class="confidence-reason" id="confidence-reason"></div>
+      </div>
+    </div>
+
+    <!-- ── Metrics Grid ── -->
+    <div class="metrics-grid">
+
+      <div class="metric-card" id="burnout-card">
+        <div class="metric-label">Burnout Risk</div>
+        <div class="metric-risk-value" id="burnout-value">--</div>
+        <div class="metric-sublabel">Stress · Sleep · Workload</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-label">Recovery Index</div>
+        <div class="metric-number" id="ri-value">0</div>
+        <div class="progress-bar"><div class="progress-fill" id="ri-bar"></div></div>
+        <div class="metric-sublabel">Sleep · Stress · Mood</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-label">Focus Readiness</div>
+        <div class="metric-number" id="fr-value">0</div>
+        <div class="progress-bar"><div class="progress-fill" id="fr-bar"></div></div>
+        <div class="metric-sublabel">Time-of-day aware</div>
+      </div>
+
+    </div>
+
+    <!-- ── Intelligence Brief ── -->
+    <div class="intel-brief-card">
+      <div class="block-title">Today's Intelligence Brief</div>
+      <div class="brief-grid">
+        <div class="brief-item">
+          <div class="brief-item-label">Primary Strength</div>
+          <div class="brief-item-value strength" id="brief-strength">--</div>
+        </div>
+        <div class="brief-item">
+          <div class="brief-item-label">Primary Risk</div>
+          <div class="brief-item-value risk" id="brief-risk">--</div>
+        </div>
+        <div class="brief-item brief-action">
+          <div class="brief-item-label">Recommended Action</div>
+          <div class="brief-item-value action" id="brief-action">--</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Focus Windows ── -->
+    <div class="focus-windows-card">
+      <div class="block-title">Focus Forecast</div>
+      <div class="windows-grid">
+        <div class="window-item peak">
+          <div class="window-icon">🎯</div>
+          <div class="window-label">Peak Focus</div>
+          <div class="window-value" id="focus-peak">--</div>
+        </div>
+        <div class="window-item break-w">
+          <div class="window-icon">☕</div>
+          <div class="window-label">Recommended Break</div>
+          <div class="window-value" id="focus-break">--</div>
+        </div>
+        <div class="window-item recovery-w">
+          <div class="window-icon">🌙</div>
+          <div class="window-label">Recovery Window</div>
+          <div class="window-value" id="focus-recovery">--</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Intelligence Narrative ── -->
+    <div class="narrative-block">
+      <div class="block-title">Intelligence Summary</div>
+      <div class="narrative-text" id="burnout-narrative">Loading analysis...</div>
+    </div>
+
+    <!-- ── Why This Score? (Explainability) ── -->
+    <div class="explainability-block">
+      <div class="block-title">Why This Score?</div>
+      <div class="explain-intro">Each signal's contribution relative to a neutral baseline (score = 50)</div>
+      <div class="contributors" id="contributors">Loading...</div>
+    </div>
+
+    <!-- ── Trend Intelligence ── -->
+    <div class="trend-block" id="trend-section"></div>
+
+    <!-- ── Key Questions ── -->
+    <div class="key-questions-block">
+      <div class="block-title">Wellness Intelligence Q&amp;A</div>
+      <div class="questions-grid">
+
+        <div class="question-item" id="q-burnout">
+          <div class="question-q">Am I heading toward burnout?</div>
+          <div class="question-a" id="qa-burnout">Analyzing...</div>
+          <div class="question-reason" id="qr-burnout"></div>
+        </div>
+
+        <div class="question-item" id="q-workload">
+          <div class="question-q">Can I accomplish today's workload?</div>
+          <div class="question-a" id="qa-workload">Analyzing...</div>
+          <div class="question-reason" id="qr-workload"></div>
+        </div>
+
+        <div class="question-item" id="q-focus">
+          <div class="question-q">When should I focus?</div>
+          <div class="question-a" id="qa-focus">--</div>
+          <div class="question-reason" id="qr-focus"></div>
+        </div>
+
+        <div class="question-item" id="q-performance">
+          <div class="question-q">Why is my performance changing?</div>
+          <div class="question-a" id="qa-performance">--</div>
+          <div class="question-reason" id="qr-performance"></div>
+        </div>
+
+        <div class="question-item q-full" id="q-tomorrow">
+          <div class="question-q">What should I adjust tomorrow?</div>
+          <div class="question-a" id="qa-tomorrow">--</div>
+          <div class="question-reason" id="qr-tomorrow"></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── AI Insight ── -->
+    <div class="insight-block">
+      <div class="insight-header">
+        <div class="block-title">AI Insight</div>
+        <div class="ai-badge">
+          <span class="ai-dot"></span>
+          <span id="ai-model-badge">Gemini · Advisory Only</span>
+        </div>
+      </div>
+      <div class="insight-text" id="ai-insight-text">Generating insight...</div>
+      <div class="insight-disclaimer">AI-generated advisory text only. Not medical advice. Not a diagnosis. Consult a qualified professional for health concerns.</div>
+    </div>
+
+    <!-- ── Recommendations ── -->
+    <div class="rec-block">
+      <div class="rec-block-header">
+        <div class="block-title">Today's Recommendations</div>
+        <div class="protocol-badge" id="protocol-badge"></div>
+      </div>
+      <div class="recommendations" id="recommendations">
+        <div class="rec-loading">Loading recommendations...</div>
+      </div>
+    </div>
+
+    <!-- ── Footer ── -->
+    <footer class="dash-footer">
+      <p>AURA Intelligence · Powered by DHIMLUX Labs</p>
+      <p class="footer-note">Informational only. Not a substitute for professional health or mental health guidance.</p>
+    </footer>
+
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

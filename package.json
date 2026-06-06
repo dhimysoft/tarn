@@ -1,0 +1,31 @@
+{
+  "name": "aura-intelligence",
+  "version": "2.0.0",
+  "description": "AURA Intelligence — Wellness Intelligence Platform powered by DHIMLUX Labs",
+  "main": "backend/server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node backend/server.js",
+    "dev": "nodemon backend/server.js"
+  },
+  "keywords": [
+    "wellness",
+    "intelligence",
+    "burnout",
+    "explainable-ai",
+    "nodejs",
+    "dhimlux"
+  ],
+  "author": "Dhimy Jean (DHIMLUX Labs)",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^5.1.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.4"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

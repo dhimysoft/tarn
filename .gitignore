@@ -1,0 +1,70 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build output
+dist/
+build/
+.next/
+out/
+
+# Environment variables — NEVER commit
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.envrc
+
+# Claude Code local settings — may contain env vars or API keys
+.claude/settings.local.json
+
+# Google / GCP credential files — NEVER commit
+*.json
+!/package.json
+!/package-lock.json
+!/vercel.json
+!/tsconfig.json
+!.vscode/*.json
+
+# Hackathon archive — not part of the platform
+BMCC-2025-AI-Innovation-Summit/
+
+# Dead code artifacts
+backend/routes/
+*.py
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.Python
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+
+# OS files
+.DS_Store
+Thumbs.db
+.DS_Store?
+._*
+
+# Editor
+.vscode/settings.json
+.idea/
+*.swp
+*.swo
+*.orig
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Test coverage
+coverage/
+htmlcov/
