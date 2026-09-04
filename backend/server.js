@@ -17,7 +17,11 @@ app.use(express.json());
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const frontendPath = path.join(__dirname, "../frontend-aura");
+// The frontend lives in ../frontend. It used to be ../frontend-aura; the
+// directory was renamed on disk but this path was never updated, so the
+// server started and then failed on every request with
+// ENOENT ... frontend-aura/index.html.
+const frontendPath = path.join(__dirname, "../frontend");
 app.use(express.static(frontendPath));
 
 // Load GEMINI_API_KEY from environment or .env file

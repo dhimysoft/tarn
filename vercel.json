@@ -1,16 +1,16 @@
 {
   "version": 2,
-  "outputDirectory": "frontend-aura",
+  "outputDirectory": "frontend",
   "builds": [
     {
-      "src": "frontend-aura/**",
+      "src": "frontend/**",
       "use": "@vercel/static"
     }
   ],
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "frontend-aura/$1"
+      "dest": "frontend/$1"
     }
   ]
 }
