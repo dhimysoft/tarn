@@ -1062,21 +1062,53 @@ body::before {
 }
 
 /* Product boundary notice — shown before any data is entered. */
+/* The safety notice has to be the most readable text on the page, not the
+   dimmest. It used a hard-coded dark background and --text-3 (the faintest
+   text colour) in every theme, so on the light theme it was pale grey writing
+   on a murky grey box. It now has its own colours per theme, each checked
+   against WCAG AA (body text 4.5:1): dark ~9:1, light ~13:1. */
 .product-notice {
+  --notice-bg:     rgba(139, 92, 246, 0.12);
+  --notice-border: rgba(167, 139, 250, 0.45);
+  --notice-text:   var(--text-1);
+  --notice-link:   #ddd6fe;
+
   max-width: 640px;
   margin: 28px auto 0;
-  padding: 16px 18px;
+  padding: 16px 18px 16px 20px;
   border-radius: 12px;
-  background: rgba(20, 14, 48, 0.6);
-  border: 1px solid var(--card-border);
-  color: var(--text-3);
-  font-size: 14px;
-  line-height: 1.6;
+  background: var(--notice-bg);
+  border: 1px solid var(--notice-border);
+  border-left: 4px solid var(--purple-2);
+  color: var(--notice-text);
+  font-size: 15px;
+  line-height: 1.65;
   text-align: left;
 }
 
-.product-notice a { color: var(--purple-3); white-space: nowrap; }
-.product-notice a:focus-visible { outline: 2px solid var(--purple-3); outline-offset: 2px; }
+:root[data-theme="light"] .product-notice {
+  --notice-bg:     #efe9ff;
+  --notice-border: rgba(109, 40, 217, 0.28);
+  --notice-link:   #5b21b6;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) .product-notice {
+    --notice-bg:     #efe9ff;
+    --notice-border: rgba(109, 40, 217, 0.28);
+    --notice-link:   #5b21b6;
+  }
+}
+
+/* The way out for someone in distress: bold and underlined, never faint. */
+.product-notice a {
+  color: var(--notice-link);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  white-space: nowrap;
+}
+.product-notice a:hover { text-decoration-thickness: 2px; }
+.product-notice a:focus-visible { outline: 2px solid var(--notice-link); outline-offset: 3px; border-radius: 3px; }
 
 /* ============================================================
    RESPONSIVE — DESKTOP TIERS
@@ -1434,3 +1466,231 @@ body::before { background: radial-gradient(circle, var(--glow-1), transparent 65
 .dash-subtitle,
 .score-label,
 .brand-sub { font-size: 0.8125rem; }   /* 13px */
+
+
+/* ============================================================
+   READABILITY, SECOND PASS
+
+   Reported: the text is small and blurry, and the dark/light
+   switch is too small to notice. Causes found, and fixed here:
+
+   1. SIZE. Everything is in rem, so one number scales it all. The
+      base was the browser's 16px, which left labels near 13px.
+   2. SOFT TEXT. Headings and the score had glowing text-shadows
+      (a halo behind every letter), and every card sat behind a
+      backdrop-filter blur, which makes the text inside render with
+      softer edges. Glows are removed; cards use a more solid fill
+      instead of blurring what is behind them.
+   3. FAINT SECONDARY TEXT. --text-3 is the colour of every label.
+      It is raised in both themes (still a clear step below body text).
+   4. THE SWITCH. 38px with one tiny icon and no word. Now 46px
+      tall, an icon AND a label, with a visible outline.
+   ============================================================ */
+
+/* 1. Size: 17px on a phone, growing to 19px on a wide screen. */
+html { font-size: clamp(17px, 15.5px + 0.35vw, 19px); }
+
+/* 2. Crisp edges. */
+body { text-rendering: optimizeLegibility; }
+.brand-name, .checkin-header h1, .score-number { text-shadow: none; }
+
+.checkin-card, .score-hero, .metric-card, .intel-brief-card, .focus-windows-card,
+.narrative-block, .explainability-block, .trend-block, .insight-block, .rec-block,
+.key-questions-block {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+:root { --card: rgba(22, 15, 50, 0.94); }
+:root[data-theme="light"] { --card: rgba(255, 255, 255, 0.96); }
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) { --card: rgba(255, 255, 255, 0.96); }
+}
+
+/* 3. Labels: a clearer step above the old dim colour, in both themes. */
+:root { --text-2: #d6ccff; --text-3: #bdb2dc; }
+:root[data-theme="light"] { --text-2: #3f3166; --text-3: #51456d; }
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) { --text-2: #3f3166; --text-3: #51456d; }
+}
+.slider-ends { font-size: 0.85rem; font-weight: 500; }
+.nav-link { font-size: 0.95rem; font-weight: 500; }
+
+/* 4. The theme switch: easy to see, easy to tap. */
+.theme-toggle {
+  width: auto;
+  min-width: 46px;
+  height: 46px;
+  padding: 0 16px;
+  gap: 8px;
+  border-radius: 999px;
+  border: 2px solid var(--purple-2);
+  background: var(--purple-glow);
+  color: var(--text-1);
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.theme-toggle:hover { background: rgba(139, 92, 246, 0.26); border-color: var(--purple-3); }
+.theme-toggle .tt-icon { font-size: 1.5rem; line-height: 1; }
+.theme-toggle .tt-label { line-height: 1; }
+
+/* It shows the mode you would switch TO: "Light mode" while dark, "Dark mode" while light. */
+.theme-toggle .label-dark { display: none; }
+:root[data-theme="light"] .theme-toggle .label-dark { display: inline; }
+:root[data-theme="light"] .theme-toggle .label-light { display: none; }
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) .theme-toggle .label-dark  { display: inline; }
+  :root:not([data-theme="dark"]) .theme-toggle .label-light { display: none; }
+}
+/* Light theme: a stronger outline so it still stands out on a pale page. */
+:root[data-theme="light"] .theme-toggle { border-color: var(--purple-1); background: rgba(109, 40, 217, 0.08); }
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) .theme-toggle { border-color: var(--purple-1); background: rgba(109, 40, 217, 0.08); }
+}
+
+/* Very narrow phones: keep the big round icon button, drop the word. */
+@media (max-width: 420px) {
+  .theme-toggle { width: 46px; padding: 0; }
+  .theme-toggle .tt-label { display: none !important; }
+}
+
+
+/* ── Navbar on phones ─────────────────────────────────────────
+   The navbar is fixed at 60px, so it has to fit on ONE row. At 390px it did
+   not: the bigger theme switch was pushed off the right edge and "Dashboard"
+   was cut off. Here the long subtitle goes, the spacing tightens, the switch
+   becomes a round icon button, and below 480px the help link reads "Get Help"
+   (its accessible name stays "Get immediate help"). */
+.nav-short { display: none; }
+
+@media (max-width: 560px) {
+  .navbar { padding: 0 12px; }
+  .brand-sub { display: none; }
+  .brand-name { letter-spacing: 1.5px; }
+  .nav-links { gap: 8px; }
+  .nav-link { white-space: nowrap; }
+  .theme-toggle { width: 46px; min-width: 46px; padding: 0; }
+  .theme-toggle .tt-label { display: none !important; }
+}
+
+@media (max-width: 480px) {
+  .nav-long  { display: none; }
+  .nav-short { display: inline; }
+  .nav-link { font-size: 0.9rem; }
+}
+
+/* ── Crisp knobs and button ───────────────────────────────────
+   The slider knobs and the main button had a soft glowing halo
+   (a 10-32px blurred shadow). Next to sharp text it reads as a blurry
+   edge. They now have a solid white ring and a tight shadow instead. */
+.signal-slider::-webkit-slider-thumb {
+  width: 22px; height: 22px;
+  border: 3px solid #ffffff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
+}
+.signal-slider::-moz-range-thumb {
+  width: 16px; height: 16px;
+  border: 3px solid #ffffff;
+  background: var(--purple-2);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
+}
+.signal-slider::-webkit-slider-thumb:hover {
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.55), 0 0 0 4px rgba(139, 92, 246, 0.35);
+}
+.analyze-btn { box-shadow: 0 4px 12px rgba(76, 29, 149, 0.4); }
+.analyze-btn:hover { box-shadow: 0 6px 16px rgba(76, 29, 149, 0.5); }
+
+
+/* ── Say or type your check-in ───────────────────────────────
+   Optional panel above the sliders. Big, plain, and readable:
+   at least 1rem text, a clear outline on the open button, and a
+   help block that is impossible to miss. */
+.voice-box { margin-bottom: 22px; }
+
+.voice-open {
+  width: 100%;
+  min-height: 48px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 2px solid var(--purple-2);
+  background: var(--purple-glow);
+  color: var(--text-1);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.voice-open:hover { background: rgba(139, 92, 246, 0.26); }
+.voice-open:focus-visible, .voice-btn:focus-visible, .voice-text:focus-visible, .voice-help-link:focus-visible {
+  outline: 3px solid var(--purple-3); outline-offset: 2px;
+}
+
+.voice-panel {
+  margin-top: 12px;
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid var(--card-border);
+  background: var(--surface-1);
+}
+.voice-panel[hidden], .voice-notice[hidden], .voice-help[hidden], #voice-body[hidden], .voice-btn[hidden] { display: none; }
+
+.voice-hint { margin: 0 0 14px; line-height: 1.6; color: var(--text-2); font-size: 1rem; }
+.voice-hint em { color: var(--text-1); font-style: normal; font-weight: 500; }
+
+.voice-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.voice-text {
+  flex: 1 1 200px;
+  min-height: 46px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--card-border);
+  background: var(--surface-2);
+  color: var(--text-1);
+  font: inherit;
+}
+.voice-btn {
+  min-height: 46px;
+  padding: 10px 18px;
+  border-radius: 10px;
+  border: 2px solid var(--purple-2);
+  background: var(--purple-2);
+  color: #ffffff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.voice-btn:hover { background: var(--purple-1); border-color: var(--purple-1); }
+.voice-btn-quiet { background: transparent; color: var(--text-1); border-color: var(--card-border); }
+.voice-btn-quiet:hover { background: var(--surface-2); border-color: var(--purple-2); }
+.voice-btn[aria-pressed="true"] { background: #b91c1c; border-color: #b91c1c; }
+
+.voice-notice {
+  margin: 0 0 14px; padding: 14px; border-radius: 10px;
+  border: 1px solid var(--card-border); background: var(--surface-2);
+  color: var(--text-1); line-height: 1.6; font-size: 1rem;
+}
+.voice-notice p { margin: 0 0 12px; }
+
+.voice-status { margin: 12px 0 0; color: var(--text-1); line-height: 1.6; font-size: 1rem; min-height: 1.6em; }
+.voice-heard { margin: 8px 0 0; padding-left: 20px; color: var(--text-2); line-height: 1.7; font-size: 1rem; }
+.voice-close { margin-top: 14px; }
+
+/* The help block replaces the form when a crisis phrase is found. */
+.voice-help {
+  padding: 18px; border-radius: 12px;
+  border: 2px solid var(--orange);
+  background: var(--orange-dim);
+  color: var(--text-1); line-height: 1.65; font-size: 1.05rem;
+}
+.voice-help p { margin: 0 0 14px; }
+.voice-help-link {
+  display: inline-block; padding: 12px 22px; border-radius: 10px;
+  background: var(--orange); color: #ffffff; font-weight: 700; text-decoration: none;
+}
+.voice-help-link:hover { filter: brightness(1.08); }
+.voice-help .voice-help-note { margin: 14px 0 0; font-size: 0.9rem; color: var(--text-2); }
+
+
+/* Trend chart: the note under it, and a legend as big as the chart's own text. */
+.trend-gap-note { margin: 8px 0 0; font-size: 0.9rem; color: var(--text-3); line-height: 1.5; }
+.trend-legend { font-size: 1rem; }

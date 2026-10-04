@@ -101,7 +101,7 @@ router.post("/logout", (req, res, next) => {
   if (!req.session) return res.status(204).end();
   req.session.destroy((err) => {
     if (err) return next(err);
-    res.clearCookie("aura.sid");
+    res.clearCookie("tarn.sid");
     return res.status(204).end();
   });
 });
@@ -119,7 +119,7 @@ router.post("/logout-all", requireAuth, async (req, res, next) => {
       { replacements: { quoted: `"${userId}"` } },
     );
 
-    res.clearCookie("aura.sid");
+    res.clearCookie("tarn.sid");
     return res.status(204).end();
   } catch (error) {
     return next(error);

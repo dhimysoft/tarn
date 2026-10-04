@@ -134,7 +134,7 @@ test("the session cookie is httpOnly and not readable by page scripts", async ()
     .send({ email: "cookie@example.com", password: "secret123", ...VALID_CONSENT });
 
   const cookie = (res.headers["set-cookie"] || []).join(";");
-  assert.match(cookie, /aura\.sid/, "the session cookie must be set");
+  assert.match(cookie, /tarn\.sid/, "the session cookie must be set");
   assert.match(cookie, /HttpOnly/i, "the session cookie must be httpOnly");
   assert.match(cookie, /SameSite/i, "the session cookie must set SameSite");
 });

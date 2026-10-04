@@ -17,11 +17,20 @@
  */
 
 (function () {
-  var STORAGE_KEY = "aura_theme";
+  var STORAGE_KEY = "tarn_theme";
+  var LEGACY_KEY = "aura_theme"; // the old name: read once so nobody loses their choice
 
   function stored() {
     try {
-      return localStorage.getItem(STORAGE_KEY);
+      var value = localStorage.getItem(STORAGE_KEY);
+      if (value === null) {
+        value = localStorage.getItem(LEGACY_KEY);
+        if (value !== null) {
+          localStorage.setItem(STORAGE_KEY, value);
+          localStorage.removeItem(LEGACY_KEY);
+        }
+      }
+      return value;
     } catch (e) {
       // Private browsing, or storage disabled. Fall back to the OS preference.
       return null;

@@ -22,10 +22,11 @@
       <span class="brand-sub">Wellness Reflection</span>
     </div>
     <div class="nav-links">
-      <a href="crisis.html" class="nav-link crisis-link">Get Immediate Help</a>
+      <a href="crisis.html" class="nav-link crisis-link" aria-label="Get immediate help"><span class="nav-long">Get Immediate Help</span><span class="nav-short">Get Help</span></a>
       <a href="dashboard.html" class="nav-link">Dashboard</a>
           <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Switch theme">
-        <span class="icon-light" aria-hidden="true">&#9788;</span><span class="icon-dark" aria-hidden="true">&#9789;</span>
+        <span class="tt-icon icon-light" aria-hidden="true">&#9728;</span><span class="tt-icon icon-dark" aria-hidden="true">&#9790;</span>
+        <span class="tt-label label-light">Light mode</span><span class="tt-label label-dark">Dark mode</span>
       </button>
 </div>
   </nav>
@@ -39,6 +40,47 @@
     </div>
 
     <form id="checkin-form" class="checkin-card">
+
+      <!-- Say or type the whole check-in in one sentence (voice.js). Optional. -->
+      <section class="voice-box" id="voice-box" aria-label="Say or type your check-in">
+        <button type="button" id="voice-open" class="voice-open" aria-expanded="false" aria-controls="voice-panel">
+          🎤 Say or type your check-in
+        </button>
+        <div id="voice-panel" class="voice-panel" hidden>
+          <div id="voice-body">
+            <p class="voice-hint">Describe how you are in one sentence. For example:
+              <em>“I slept well, stress is moderate, mood is good, energy is low, studied four hours.”</em></p>
+
+            <div id="voice-notice" class="voice-notice" hidden>
+              <p><strong>Before the microphone starts:</strong> your browser turns speech into text, and most browsers
+                send the audio to their maker's servers to do it (Google for Chrome, Apple for Safari). TARN does not
+                save or send what you say anywhere else. Typing never leaves your device.</p>
+              <div class="voice-row">
+                <button type="button" id="voice-notice-yes" class="voice-btn">Okay, start listening</button>
+                <button type="button" id="voice-notice-no" class="voice-btn voice-btn-quiet">I'll type instead</button>
+              </div>
+            </div>
+
+            <div class="voice-row">
+              <button type="button" id="voice-mic" class="voice-btn" aria-pressed="false">🎤 Start listening</button>
+              <input type="text" id="voice-text" class="voice-text" placeholder="Or type it here" aria-label="Type your check-in" autocomplete="off" />
+              <button type="button" id="voice-apply" class="voice-btn">Fill in the sliders</button>
+            </div>
+
+            <p id="voice-status" class="voice-status" role="status" aria-live="polite"></p>
+            <ul id="voice-heard" class="voice-heard"></ul>
+          </div>
+
+          <div id="voice-help" class="voice-help" role="alert" hidden>
+            <p>If you are thinking about hurting yourself or ending your life, help is available right now, at any hour.
+              You do not have to go through this alone.</p>
+            <a class="voice-help-link" href="crisis.html">Get immediate help →</a>
+            <p class="voice-help-note">Nothing you said or typed here was saved.</p>
+          </div>
+
+          <button type="button" id="voice-close" class="voice-btn voice-btn-quiet voice-close">Close</button>
+        </div>
+      </section>
 
       <div class="signal-group">
         <div class="signal-header">
@@ -122,5 +164,6 @@
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="script.js"></script>
+  <script type="module" src="voice.js"></script>
 </body>
 </html>

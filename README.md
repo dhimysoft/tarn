@@ -3,7 +3,7 @@
 **Wellness Intelligence Platform**
 
 Originally developed during the BMCC AI Innovation Challenge 2025.
-Independently re-architected and expanded into AURA Intelligence by Dhimy Jean.
+Independently re-architected and expanded into TARN by Dhimy Jean.
 Powered by DHIMLUX Labs.
 
 ---
@@ -383,11 +383,11 @@ Contributions:
 
 ## Project Evolution
 
-AURA Intelligence began as a team project developed during the BMCC AI Innovation Challenge 2025.
+TARN began as a team project developed during the BMCC AI Innovation Challenge 2025.
 
 The original prototype focused on basic wellness tracking and AI-generated wellness suggestions.
 
-Following the competition, the project was independently re-engineered and expanded by Dhimy Jean into AURA Intelligence, a Wellness Intelligence Platform built around deterministic scoring engines, explainable recommendations, burnout forecasting, recovery analytics, and focus optimization.
+Following the competition, the project was independently re-engineered and expanded by Dhimy Jean into TARN, a Wellness Intelligence Platform built around deterministic scoring engines, explainable recommendations, burnout forecasting, recovery analytics, and focus optimization.
 
 The redesign introduced a modern full-stack architecture, wellness intelligence engine, protocol-based recommendation system, explainability layer, confidence scoring, and optional AI narrative generation.
 
@@ -402,3 +402,37 @@ MIT License. See [LICENSE](LICENSE).
 ---
 
 *TARN · Powered by DHIMLUX Labs · Built by Dhimy Jean · 2025*
+
+## Gemini: staying free
+
+The dashboard can show a short reflection written by Google's Gemini. It is
+optional: with no key, TARN shows its built-in reflection, and everything else works.
+
+**How this is kept free (and what you must do to keep it that way)**
+
+1. **Get the key from [AI Studio](https://aistudio.google.com/apikey)** and check that it
+   says **Free of charge** next to the key's project.
+2. **Never add a billing account to that project.** This is the real guarantee: with no
+   billing account Google cannot charge you. Past the free limit it answers "quota
+   exceeded" and TARN quietly shows the built-in text.
+3. The code adds its own safety on top (`backend/gemini.js`): it only ever calls models
+   Google lists as free (a model named in `GEMINI_MODEL` that is not on the list is
+   ignored), stops at 150 calls a day (`GEMINI_DAILY_CAP`), limits each visitor, caches
+   repeated answers, and pauses everything for a while if Google says the key or quota is
+   used up.
+
+**Setup**
+- Local: put the key in `backend/.env` as `GEMINI_API_KEY=...` and restart the server.
+- Vercel: Project → Settings → Environment Variables → add `GEMINI_API_KEY`, then redeploy.
+  The `api/wellness/insight.js` function does the rest.
+- Never put the key in anything under `frontend/`; it would be visible to every visitor.
+
+**Privacy.** On the free tier Google may use what you send to improve its products. So TARN
+sends only a few numbers from the check-in (the scores) and never anything a person typed.
+The dashboard says so, and marks AI text as AI-generated.
+
+**Safety.** AI text is treated as untrusted. It is checked against `docs/AI_SAFETY.md`
+(no diagnosis, medication, promised results, predictions about health, crisis language, and
+so on). If it fails any check it is discarded and the built-in text is shown instead.
+Tests: `npm test`.
+

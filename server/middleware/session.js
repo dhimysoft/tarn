@@ -39,7 +39,7 @@ const store = new PgStore({
 });
 
 const sessionMiddleware = session({
-  name: "aura.sid",
+  name: "tarn.sid",
   secret: process.env.SESSION_SECRET,
   store,
 

@@ -1,4 +1,4 @@
-// AURA Intelligence — Wellness Intelligence Platform
+// TARN — Wellness Reflection
 // Powered by DHIMLUX Labs
 // Author: Dhimy Jean
 //
@@ -10,17 +10,20 @@ import cors from "cors";
 import path from "path";
 import { fileURLToPath } from "url";
 import { readFileSync } from "fs";
+import { createInsightService, LIMITS } from "./gemini.js";
 
 const app = express();
+// Behind a proxy (Vercel, Render) req.ip is the visitor, not the proxy.
+app.set("trust proxy", 1);
 app.use(cors());
 app.use(express.json());
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-// The frontend lives in ../frontend. It used to be ../frontend-aura; the
+// The frontend lives in ../frontend. It used to have a different folder name; the
 // directory was renamed on disk but this path was never updated, so the
 // server started and then failed on every request with
-// ENOENT ... frontend-aura/index.html.
+// ENOENT ... on the old folder's index.html.
 const frontendPath = path.join(__dirname, "../frontend");
 app.use(express.static(frontendPath));
 
@@ -622,51 +625,18 @@ app.post("/api/wellness/score", (req, res) => {
    API: POST /api/wellness/insight  (AI Layer)
    ============================================================ */
 
+// All Gemini access goes through gemini.js: free models only, hard daily cap,
+// per-visitor limits, numbers-only input, validated output. If the AI is
+// unavailable for ANY reason the response has insight:null and the page shows
+// its built-in text instead.
+const insightService = createInsightService({
+  apiKey: GEMINI_API_KEY,
+  preferredModel: process.env.GEMINI_MODEL,
+  limits: { ...LIMITS, dailyCap: Math.max(1, Number(process.env.GEMINI_DAILY_CAP) || LIMITS.dailyCap) },
+});
+
 app.post("/api/wellness/insight", async (req, res) => {
-  const { wellness_score, tier, burnout_risk, recovery_index, focus_readiness, delta, confidence } = req.body;
-
-  if (!GEMINI_API_KEY) {
-    return res.json({ insight: "AI insight is unavailable — GEMINI_API_KEY is not configured.", advisory: true, model: "unavailable" });
-  }
-
-  const deltaText =
-    delta != null
-      ? delta >= 0 ? `improved by ${delta} points` : `declined by ${Math.abs(delta)} points`
-      : "no prior session to compare";
-
-  const prompt = `You are an advisory wellness intelligence system. You do not provide medical advice, diagnoses, or treatment recommendations. Your role is to provide concise, factual, pattern-based observations.
-
-Wellness data:
-- Wellness Score: ${wellness_score}/100 (${tier})
-- Burnout Risk: ${burnout_risk}
-- Recovery Index: ${recovery_index}/100
-- Focus Readiness: ${focus_readiness}/100
-- Confidence: ${confidence}%
-- Change from prior session: ${deltaText}
-
-Write exactly 2–3 sentences. Describe the pattern in neutral, factual language. Do not diagnose. Do not recommend medical action. End with one general behavioral suggestion.`;
-
-  try {
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { temperature: 0.35, maxOutputTokens: 160 },
-        }),
-      }
-    );
-
-    if (!response.ok) throw new Error(`Gemini ${response.status}`);
-    const data = await response.json();
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text ?? "Insight unavailable.";
-    res.json({ insight: text.trim(), advisory: true, model: "gemini-2.0-flash" });
-  } catch (err) {
-    console.error("Gemini error:", err.message);
-    res.json({ insight: "AI insight temporarily unavailable.", advisory: true, model: "unavailable" });
-  }
+  res.json(await insightService.insight(req.body, req.ip));
 });
 
 /* ============================================================
@@ -680,13 +650,13 @@ app.use((req, res) => res.sendFile(path.join(frontendPath, "index.html")));
 if (process.env.NODE_ENV !== "production") {
   const PORT = process.env.PORT || 5001;
   const server = app.listen(PORT, () =>
-    console.log(`AURA Intelligence running at http://localhost:${PORT}`)
+    console.log(`TARN running at http://localhost:${PORT}`)
   );
   server.on("error", (err) => {
     if (err.code === "EADDRINUSE") {
-      console.error(`\n[AURA] Port ${PORT} is already in use.\nRun: pkill -f "node backend/server.js"\nThen: npm run dev\n`);
+      console.error(`\n[TARN] Port ${PORT} is already in use.\nRun: pkill -f "node backend/server.js"\nThen: npm run dev\n`);
     } else {
-      console.error("[AURA] Server error:", err.message);
+      console.error("[TARN] Server error:", err.message);
     }
     process.exit(1);
   });

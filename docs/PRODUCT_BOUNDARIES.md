@@ -40,7 +40,7 @@ without the disclaimer, the feature is wrong — not the wording.
 
 ## Claims removed in Phase 1, and why
 
-These shipped in the previous version (AURA Intelligence) and have been removed.
+These shipped in the previous version (the earlier version of this project) and have been removed.
 
 ### 1. "Confidence" percentage — **removed entirely**
 

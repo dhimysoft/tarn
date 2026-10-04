@@ -30,6 +30,7 @@ const USER_FACING = [
   "frontend/dashboard.html",
   "frontend/crisis.html",
   "frontend/script.js",
+  "frontend/voice.js",
 ];
 
 /**

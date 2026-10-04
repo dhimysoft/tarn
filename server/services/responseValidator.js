@@ -71,7 +71,7 @@ const PROHIBITED = [
     why: "Discourages professional care." },
   { re: /\bdiagnos(e|is|ed|ing)\b/i,
     why: "Diagnostic language. Use descriptive wording instead." },
-  { re: /\b(studies|research) (show|prove)s? that (this app|aura|tarn)\b/i,
+  { re: /\b(studies|research) (show|prove)s? that (this app|tarn)\b/i,
     why: "Fabricated evidence about this product." },
 ];
 

@@ -1,8 +1,10 @@
-# AURA Intelligence — Resume & Portfolio Materials
+> **Written for the earlier version.** Phrases here such as "burnout forecasting" and "wellness intelligence" describe features the product no longer claims. Check `docs/CLAIMS_REGISTER.md` and `docs/PRODUCT_BOUNDARIES.md` before reusing any of this wording.
+
+# TARN — Resume & Portfolio Materials
 
 ## Project Title
 
-**AURA Intelligence** — Wellness Intelligence Platform · DHIMLUX Labs
+**TARN** — Wellness Intelligence Platform · DHIMLUX Labs
 
 ---
 
@@ -65,10 +67,10 @@ AI-powered wellness intelligence platform. Deterministic engines for burnout ris
 
 ## LinkedIn Project Entry
 
-**AURA Intelligence — Wellness Intelligence Platform**
+**TARN — Wellness Intelligence Platform**
 *DHIMLUX Labs · 2025 · dhimyjean.dev*
 
-AURA Intelligence transforms six daily behavioral signals into a full suite of wellness intelligence: a Wellness Score with explainable contributor breakdowns, a 3-factor Burnout Risk engine, a Recovery Index, a time-aware Focus Forecast with daily scheduling windows, and a Confidence model.
+TARN transforms six daily behavioral signals into a full suite of wellness intelligence: a Wellness Score with explainable contributor breakdowns, a 3-factor Burnout Risk engine, a Recovery Index, a time-aware Focus Forecast with daily scheduling windows, and a Confidence model.
 
 The platform enforces a strict separation between deterministic scoring (no LLM) and AI inference (Gemini, advisory only) — the same architectural principle used across the DHIMLUX portfolio. Every score is auditable, every contributor delta is displayed, and no medical claims are made at any layer.
 
@@ -80,10 +82,10 @@ The platform enforces a strict separation between deterministic scoring (no LLM)
 
 ## One-Liner for Bio
 
-> Built AURA Intelligence — a wellness platform with deterministic burnout forecasting, explainable scoring, and advisory-only AI inference, designed with the same separation-of-concerns architecture as DHIMIX AI and BridgeAI.
+> Built TARN — a wellness platform with deterministic burnout forecasting, explainable scoring, and advisory-only AI inference, designed with the same separation-of-concerns architecture as DHIMIX AI and BridgeAI.
 
 ---
 
 ## Elevator Pitch (30 sec)
 
-"AURA Intelligence is a wellness platform I built that turns six daily signals — sleep, stress, mood, energy, focus, and schedule load — into a full intelligence suite: a wellness score with contributor breakdowns, a burnout risk forecast, recovery and focus readiness scores, and a time-aware daily brief. The scoring is entirely deterministic — no AI in that path — and Gemini sits in a strictly advisory layer that never sees raw input. It's designed the same way I build all my AI platforms: AI provides insights, the platform makes recommendations."
+"TARN is a wellness platform I built that turns six daily signals — sleep, stress, mood, energy, focus, and schedule load — into a full intelligence suite: a wellness score with contributor breakdowns, a burnout risk forecast, recovery and focus readiness scores, and a time-aware daily brief. The scoring is entirely deterministic — no AI in that path — and Gemini sits in a strictly advisory layer that never sees raw input. It's designed the same way I build all my AI platforms: AI provides insights, the platform makes recommendations."

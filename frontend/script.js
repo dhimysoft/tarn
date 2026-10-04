@@ -470,11 +470,21 @@ function computeLocalInsight({ wellness_score, tier, burnout_risk, recovery_inde
    LOCAL STORAGE
    ============================================================ */
 
-const STORAGE_KEY = "aura_sessions_v2";
+const STORAGE_KEY = "tarn_sessions_v2";
+const LEGACY_STORAGE_KEY = "aura_sessions_v2"; // the old name: carried over once, then removed
 
 function getSessions() {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); }
-  catch { return []; }
+  try {
+    let raw = localStorage.getItem(STORAGE_KEY);
+    if (raw === null) {
+      raw = localStorage.getItem(LEGACY_STORAGE_KEY);
+      if (raw !== null) {
+        localStorage.setItem(STORAGE_KEY, raw);
+        localStorage.removeItem(LEGACY_STORAGE_KEY);
+      }
+    }
+    return JSON.parse(raw || "[]");
+  } catch { return []; }
 }
 
 function saveSessions(s) { localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); }
@@ -884,12 +894,15 @@ function computeWhyThisTrend(sessions, serverInsights) {
   if (Math.abs(recovPct) > 5) {
     const sleepPct  = pctOf(avgSig(recent, "sleep"),  avgSig(baseline, "sleep"));
     const stressPct = pctOf(avgSig(recent, "stress"), avgSig(baseline, "stress"));
+    // Descriptive only: "alongside", never "due to". Two self-reported numbers
+    // moving together is not evidence that one caused the other
+    // (docs/CLAIMS_REGISTER.md: correlation only, never causal).
     if (recovPct > 5) {
-      const reason = sleepPct > 5 ? "improved sleep quality" : stressPct < -5 ? "reduced stress" : "improved sleep and stress balance";
-      explanations.push({ type: "positive", text: `Recovery improved due to ${reason}.` });
+      const reason = sleepPct > 5 ? "higher sleep ratings" : stressPct < -5 ? "lower stress ratings" : "better sleep and stress ratings";
+      explanations.push({ type: "positive", text: `Your rest check-in went up, alongside ${reason}.` });
     } else {
-      const reason = sleepPct < -5 ? "declining sleep quality" : stressPct > 5 ? "rising stress levels" : "reduced sleep quality and elevated stress";
-      explanations.push({ type: "negative", text: `Recovery declined due to ${reason}.` });
+      const reason = sleepPct < -5 ? "lower sleep ratings" : stressPct > 5 ? "higher stress ratings" : "lower sleep and higher stress ratings";
+      explanations.push({ type: "negative", text: `Your rest check-in went down, alongside ${reason}.` });
     }
   }
 
@@ -1019,9 +1032,30 @@ function renderTrendSection(serverInsights) {
   renderTrendChart();
 }
 
+// Chart.js draws on a canvas, so it cannot see the page's CSS colours. Read them
+// at draw time so the axis text matches the current theme, and redraw when the
+// theme switch is pressed.
+function chartColors() {
+  const root = document.documentElement;
+  const explicit = root.getAttribute("data-theme");
+  const light = explicit ? explicit === "light" : window.matchMedia("(prefers-color-scheme: light)").matches;
+  const css = getComputedStyle(root);
+  return {
+    tick: css.getPropertyValue("--text-3").trim() || (light ? "#51456d" : "#bdb2dc"),
+    grid: light ? "rgba(36,22,64,0.12)" : "rgba(255,255,255,0.09)",
+    pointRim: light ? "rgba(255,255,255,0.95)" : "rgba(7,3,22,0.8)",
+  };
+}
+
 function renderTrendChart() {
   const ctx = document.getElementById("trend-chart");
   if (!ctx) return;
+  if (!window._trendThemeWired) {
+    window._trendThemeWired = true;
+    const toggle = document.getElementById("theme-toggle");
+    if (toggle) toggle.addEventListener("click", () => setTimeout(renderTrendChart, 60));
+  }
+  const colors = chartColors();
 
   const sessions = getSessions().slice(0, 7).reverse();
   if (!sessions.length) return;
@@ -1035,10 +1069,10 @@ function renderTrendChart() {
     borderColor: color,
     borderWidth: dashed ? 1.5 : 2.5,
     borderDash: dashed ? [5, 4] : [],
-    tension: 0.42,
+    tension: 0, // straight lines: a smooth curve would imply data between check-ins that does not exist
     fill: false,
     pointBackgroundColor: color,
-    pointBorderColor: "rgba(7,3,22,0.8)",
+    pointBorderColor: chartColors().pointRim,
     pointBorderWidth: 1.5,
     pointRadius: 5,
     pointHoverRadius: 7,
@@ -1050,6 +1084,15 @@ function renderTrendChart() {
   const recoveryData = sessions.map((s) => s.scores?.recovery_index  ?? null);
   const focusData    = sessions.map((s) => s.scores?.focus_readiness ?? null);
   const burnoutData  = sessions.map((s) => BURNOUT_NUM[s.scores?.burnout_risk] ?? null);
+
+  // The x axis lists check-ins one after another, not days on a calendar. If
+  // days were skipped, say so rather than let the spacing imply otherwise.
+  const oldNote = document.getElementById("trend-gap-note");
+  if (oldNote) oldNote.remove();
+  const gapDays = sessions.slice(1).map((s, i) => (new Date(s.date) - new Date(sessions[i].date)) / 86400000);
+  if (gapDays.some((d) => d > 3)) {
+    ctx.insertAdjacentHTML("afterend", '<p id="trend-gap-note" class="trend-gap-note">Days without a check-in are skipped, so the points are not evenly spaced in time.</p>');
+  }
 
   if (window._trendChart) { window._trendChart.destroy(); window._trendChart = null; }
 
@@ -1071,13 +1114,13 @@ function renderTrendChart() {
       scales: {
         y: {
           min: 0, max: 100,
-          ticks: { color: "#7c6fa0", stepSize: 25, font: { size: 11 } },
-          grid: { color: "rgba(255,255,255,0.05)", drawBorder: false },
+          ticks: { color: colors.tick, stepSize: 25, font: { size: 13 } },
+          grid: { color: colors.grid, drawBorder: false },
           border: { display: false },
         },
         x: {
-          ticks: { color: "#7c6fa0", font: { size: 11 }, maxRotation: 0 },
-          grid: { color: "rgba(255,255,255,0.03)", drawBorder: false },
+          ticks: { color: colors.tick, font: { size: 13 }, maxRotation: 0 },
+          grid: { color: colors.grid, drawBorder: false },
           border: { display: false },
         },
       },
@@ -1171,8 +1214,44 @@ function renderInsight(scores) {
   const textEl  = document.getElementById("ai-insight-text");
   const modelEl = document.getElementById("ai-model-badge");
   if (!textEl) return;
+
+  // The built-in text is shown at once, so the page never waits on a network
+  // call and never shows an empty box. It is also what stays if the AI is off,
+  // over its limit, unreachable, or says something the safety rules reject.
   textEl.textContent = computeLocalInsight(scores);
-  if (modelEl) modelEl.textContent = "Deterministic · Advisory Only";
+  if (modelEl) modelEl.textContent = "Built-in · Advisory Only";
+
+  fetchAiInsight(scores).then((ai) => {
+    if (!ai) return;
+    textEl.textContent = ai.insight;
+    if (modelEl) modelEl.textContent = "AI-generated · Gemini · Advisory Only";
+  });
+}
+
+// Asks the server for a Gemini reflection. Only numbers and category names are
+// sent: nothing you typed ever leaves this page. Resolves to null on ANY problem.
+async function fetchAiInsight(scores) {
+  if (!/^https?:$/.test(location.protocol)) return null;
+  try {
+    const res = await fetch("/api/wellness/insight", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        wellness_score: scores.wellness_score,
+        tier: scores.tier,
+        burnout_risk: scores.burnout_risk,
+        recovery_index: scores.recovery_index,
+        focus_readiness: scores.focus_readiness,
+        delta: scores.delta ?? null,
+      }),
+      signal: AbortSignal.timeout(16000),
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data && data.source === "gemini" && typeof data.insight === "string" && data.insight ? data : null;
+  } catch (_) {
+    return null;
+  }
 }
 
 /* ============================================================
