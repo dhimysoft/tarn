@@ -1,5 +1,5 @@
 /**
- * AURA Wellness Scoring Engine
+ * TARN Wellness Scoring Engine
  * Deterministic — no LLM involvement. Fully auditable.
  */
 

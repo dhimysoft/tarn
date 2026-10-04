@@ -1,4 +1,4 @@
-# AURA Intelligence
+# TARN
 
 **Wellness Intelligence Platform**
 
@@ -10,16 +10,16 @@ Powered by DHIMLUX Labs.
 
 ## Executive Summary
 
-AURA Intelligence converts six daily behavioral signals — sleep, stress, mood, energy, focus, and consistency — into a structured suite of deterministic wellness metrics. The platform surfaces these through an explainability layer, a confidence model, and an AI advisory insight system.
+TARN converts six daily behavioral signals — sleep, stress, mood, energy, focus, and consistency — into a structured suite of deterministic wellness metrics. The platform surfaces these through an explainability layer, a confidence model, and an AI advisory insight system.
 
-The result is a decision-support tool, not a tip generator. AURA answers questions that matter:
+The result is a decision-support tool, not a tip generator. TARN answers questions that matter:
 
 - Am I heading toward burnout?
 - When should I do deep work today?
 - Why is my productivity dropping?
 - How is my wellness trending over the past week?
 
-**Core principle:** AI provides insights. The platform makes recommendations. AURA does not diagnose, treat, or make health claims of any kind.
+**Core principle:** AI provides insights. The platform makes recommendations. TARN does not diagnose, treat, or make health claims of any kind.
 
 ---
 
@@ -33,13 +33,13 @@ Students and professionals face compounding wellness challenges — chronic slee
 - Separates AI inference from platform recommendations
 - Scales with context (workload, time of day, streak history)
 
-AURA fills this gap.
+TARN fills this gap.
 
 ---
 
 ## Product Vision
 
-AURA is the wellness intelligence layer between "how do you feel?" and "what should you actually do about it." It applies the same engineering rigor used across the DHIMLUX ecosystem — DHIMIX AI for music intelligence, BridgeAI for civic intelligence, DHIMLUX OS for workflow intelligence — to personal wellness.
+TARN is the wellness intelligence layer between "how do you feel?" and "what should you actually do about it." It applies the same engineering rigor used across the DHIMLUX ecosystem — DHIMIX AI for music intelligence, BridgeAI for civic intelligence, DHIMLUX OS for workflow intelligence — to personal wellness.
 
 ---
 
@@ -251,9 +251,9 @@ Bounded: [50, 98]. A user's first check-in starts at ~65%. A week of consistent,
 
 ## Privacy & Ethics
 
-**No medical claims.** AURA outputs are informational and advisory. The platform does not diagnose, treat, or replace professional health care. All AI-generated text is labeled "Advisory Only."
+**No medical claims.** TARN outputs are informational and advisory. The platform does not diagnose, treat, or replace professional health care. All AI-generated text is labeled "Advisory Only."
 
-**Data minimization.** AURA does not collect biometrics, location, or passive behavioral data. Signals are self-reported.
+**Data minimization.** TARN does not collect biometrics, location, or passive behavioral data. Signals are self-reported.
 
 **AI output boundaries.** The AI layer receives scored, structured data — not raw user input. Model outputs are advisory text only and do not influence scoring.
 
@@ -391,7 +391,7 @@ Following the competition, the project was independently re-engineered and expan
 
 The redesign introduced a modern full-stack architecture, wellness intelligence engine, protocol-based recommendation system, explainability layer, confidence scoring, and optional AI narrative generation.
 
-Today, AURA Intelligence serves as the wellness intelligence component of the broader DHIMLUX ecosystem.
+Today, TARN serves as the wellness intelligence component of the broader DHIMLUX ecosystem.
 
 ---
 
@@ -401,4 +401,4 @@ MIT License. See [LICENSE](LICENSE).
 
 ---
 
-*AURA Intelligence · Powered by DHIMLUX Labs · Built by Dhimy Jean · 2025*
+*TARN · Powered by DHIMLUX Labs · Built by Dhimy Jean · 2025*

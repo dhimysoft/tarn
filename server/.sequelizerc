@@ -1,0 +1,10 @@
+// Tells sequelize-cli where things live, so migrations sit beside the models
+// rather than in the default top-level folders.
+const path = require("path");
+
+module.exports = {
+  config: path.resolve("config", "config.js"),
+  "models-path": path.resolve("models"),
+  "migrations-path": path.resolve("migrations"),
+  "seeders-path": path.resolve("seeders"),
+};

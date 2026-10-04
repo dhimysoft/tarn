@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Get Immediate Help — TARN</title>
+  <meta name="description" content="Crisis support resources. TARN is not a crisis service and does not monitor entries." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <script src="theme.js"></script>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <canvas id="particle-bg" aria-hidden="true"></canvas>
+
+  <nav class="navbar">
+    <div class="nav-brand">
+      <span class="brand-name">TARN</span>
+      <span class="brand-sub">Wellness Reflection</span>
+    </div>
+    <div class="nav-links">
+      <a href="index.html" class="nav-link">Check In</a>
+      <a href="dashboard.html" class="nav-link">Dashboard</a>
+          <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Switch theme">
+        <span class="icon-light" aria-hidden="true">&#9788;</span><span class="icon-dark" aria-hidden="true">&#9789;</span>
+      </button>
+</div>
+  </nav>
+
+  <main class="crisis-page" id="main-content">
+    <h1 class="crisis-title">Get Immediate Help</h1>
+
+    <!-- Stated first, before any resource, so nobody assumes someone is watching. -->
+    <div class="crisis-notice" role="note">
+      <strong>TARN is not a crisis service, and entries are not monitored.</strong>
+      If you are experiencing emotional distress or having thoughts of suicide, call or
+      text <strong>988</strong> to connect with the 988 Suicide &amp; Crisis Lifeline.
+      If you or someone else is in immediate danger, call <strong>911</strong> or go to
+      the nearest emergency department.
+    </div>
+
+    <h2 class="crisis-subtitle">United States</h2>
+
+    <div class="crisis-actions">
+      <!-- tel:/sms: so a phone dials or composes directly. -->
+      <a class="crisis-btn crisis-btn-primary" href="tel:988">
+        <span class="crisis-btn-label">Call 988</span>
+        <span class="crisis-btn-sub">988 Suicide &amp; Crisis Lifeline · 24/7</span>
+      </a>
+
+      <a class="crisis-btn crisis-btn-primary" href="sms:988">
+        <span class="crisis-btn-label">Text 988</span>
+        <span class="crisis-btn-sub">If you would rather not speak aloud</span>
+      </a>
+
+      <a class="crisis-btn" href="https://988lifeline.org" target="_blank" rel="noopener noreferrer">
+        <span class="crisis-btn-label">Visit 988lifeline.org</span>
+        <span class="crisis-btn-sub">Chat online · opens in a new tab</span>
+      </a>
+
+      <a class="crisis-btn crisis-btn-emergency" href="tel:911">
+        <span class="crisis-btn-label">Call 911</span>
+        <span class="crisis-btn-sub">If you or someone else is in immediate danger</span>
+      </a>
+    </div>
+
+    <div class="crisis-secondary">
+    <!-- Honest about coverage rather than showing US numbers to everyone. -->
+    <div class="crisis-region-note">
+      <h2 class="crisis-subtitle">Outside the United States</h2>
+      <p>
+        The numbers above work in the United States only. TARN does not yet
+        carry verified crisis resources for other countries, and showing you a number
+        that will not connect would be worse than saying so.
+      </p>
+      <p>
+        <a href="https://findahelpline.com" target="_blank" rel="noopener noreferrer">
+          findahelpline.com
+        </a>
+        lists verified crisis lines by country.
+      </p>
+    </div>
+
+    <div class="crisis-footer-note">
+      <p>
+        Nothing you write in TARN is read by a person, reviewed by a healthcare
+        professional, or monitored for signs of distress. It cannot detect an emergency
+        and it cannot contact anyone on your behalf.
+      </p>
+    </div>
+    </div>
+
+    <p style="margin-top:28px"><a href="dashboard.html" class="nav-link">← Back to dashboard</a></p>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>

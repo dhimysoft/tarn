@@ -1,4 +1,4 @@
-/* AURA Intelligence — Wellness Intelligence Platform
+/* TARN — Wellness Reflection
    Powered by DHIMLUX Labs · Author: Dhimy Jean
    ------------------------------------------------ */
 
@@ -21,7 +21,19 @@
   --purple-glow:   rgba(139, 92, 246, 0.12);
   --text-1:        #f1f0ff;
   --text-2:        #c4b5fd;
-  --text-3:        #7c6fa0;
+  /* Was #7c6fa0, which measured 4.13:1 on the card background — below the
+     4.5:1 WCAG AA needs for body text. This was a pre-existing issue in the
+     dark theme, not introduced by the light theme work. #9b8fbb is 6.27:1
+     and still reads as clearly secondary. */
+  --text-3:        #9b8fbb;
+  /* Layout containers.
+     --shell   : the page container. Grows to 1100px on large screens.
+     --reading : a narrower cap for PROSE. Long paragraphs stretched to the full
+                 shell width run ~150 characters per line, which is tiring to
+                 read, so text blocks stay narrower than card grids. */
+  --shell:   min(1100px, calc(100% - 48px));
+  --reading: 820px;
+
   --green:         #10b981;
   --green-dim:     rgba(16, 185, 129, 0.15);
   --amber:         #f59e0b;
@@ -35,10 +47,31 @@
   --radius-sm:     10px;
   --radius-xs:     7px;
   --shadow:        0 0 48px rgba(139, 92, 246, 0.08);
+
+  /* The page backdrop, as a token so the light theme can swap it. */
+  --page-bg:       radial-gradient(ellipse at 20% 10%, #1a103f 0%, #070316 60%);
+  --glow-1:        rgba(124, 58, 237, 0.16);
+  --particle:      rgba(139, 92, 246, 0.11);   /* matches the original canvas alpha */
+  --nav-bg:        rgba(7, 3, 22, 0.75);
+
+  /* Semantic status colours, as TOKENS.
+     These were hardcoded pale hex values (#34d399, #fcd34d, #fdba74, #fca5a5)
+     chosen for a dark background. On the light theme they measured as low as
+     1.42:1 — far below the 4.5:1 WCAG AA needs for body text. */
+  --sem-good:      #34d399;
+  --sem-warn:      #fcd34d;
+  --sem-alert:     #fdba74;
+  --sem-critical:  #fca5a5;
+
+  /* Raised surfaces. White overlays only lighten a dark ground; on a light
+     ground they do nothing, so the theme supplies its own. */
+  --surface-1:     rgba(255,255,255,0.03);
+  --surface-2:     rgba(255,255,255,0.06);
+  --surface-track: rgba(255,255,255,0.07);
 }
 
 body {
-  background: radial-gradient(ellipse at 20% 10%, #1a103f 0%, #070316 60%);
+  background: var(--page-bg);
   color: var(--text-1);
   font-family: "Inter", sans-serif;
   min-height: 100vh;
@@ -77,7 +110,7 @@ body::before {
   display: flex; align-items: center; justify-content: space-between;
   padding: 0 32px;
   backdrop-filter: blur(18px);
-  background: rgba(7, 3, 22, 0.75);
+  background: var(--nav-bg);
   border-bottom: 1px solid var(--card-border);
   z-index: 1000;
 }
@@ -93,7 +126,7 @@ body::before {
 }
 
 .brand-sub {
-  font-size: 0.7rem; font-weight: 500;
+  font-size: 0.8125rem; font-weight: 500;
   color: var(--text-3); letter-spacing: 1px;
   text-transform: uppercase;
 }
@@ -142,14 +175,14 @@ body::before {
 
 .streak-badge {
   display: inline-block; padding: 5px 14px;
-  background: rgba(255,255,255,0.04);
+  background: var(--surface-1);
   border: 1px solid rgba(255,255,255,0.09);
-  border-radius: 20px; font-size: 0.8rem; color: var(--text-3);
+  border-radius: 20px; font-size: 0.91rem; color: var(--text-3);
 }
 
 .streak-badge.active {
   background: var(--amber-dim);
-  border-color: rgba(245, 158, 11, 0.35); color: #fcd34d;
+  border-color: rgba(245, 158, 11, 0.35); color: var(--sem-warn);
 }
 
 .checkin-card {
@@ -168,7 +201,7 @@ body::before {
 .signal-name { font-size: 0.875rem; font-weight: 500; color: var(--text-2); }
 
 .signal-value-label {
-  font-size: 0.78rem; font-weight: 600;
+  font-size: 0.895rem; font-weight: 600;
   color: var(--purple-3); min-width: 96px; text-align: right;
 }
 
@@ -198,7 +231,7 @@ body::before {
 
 .slider-ends {
   display: flex; justify-content: space-between;
-  font-size: 0.7rem; color: var(--text-3);
+  font-size: 0.8125rem; color: var(--text-3);
 }
 
 /* Schedule */
@@ -210,12 +243,12 @@ body::before {
 
 .schedule-field {
   flex: 1; display: flex; flex-direction: column; gap: 5px;
-  font-size: 0.77rem; color: var(--text-3);
+  font-size: 0.88rem; color: var(--text-3);
 }
 
 .schedule-number {
   padding: 9px 12px;
-  background: rgba(255,255,255,0.05);
+  background: var(--surface-2);
   border: 1px solid rgba(255,255,255,0.09);
   border-radius: var(--radius-sm); color: var(--text-1);
   font-size: 0.95rem; font-family: "Inter", sans-serif; width: 100%;
@@ -241,14 +274,14 @@ body::before {
 .analyze-btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
 
 .checkin-footer-note {
-  font-size: 0.73rem; color: var(--text-3); text-align: center; max-width: 420px;
+  font-size: 0.94rem; color: var(--text-3); text-align: center; max-width: 420px;
 }
 
 .error-toast {
   background: var(--red-dim);
   border: 1px solid rgba(239,68,68,0.3);
-  color: #fca5a5; padding: 10px 14px;
-  border-radius: var(--radius-sm); font-size: 0.83rem; text-align: center;
+  color: var(--sem-critical); padding: 10px 14px;
+  border-radius: var(--radius-sm); font-size: 0.93rem; text-align: center;
 }
 
 /* ============================================================
@@ -257,8 +290,12 @@ body::before {
 
 .dashboard-page {
   position: relative; z-index: 1;
-  max-width: 780px; margin: 0 auto;
-  padding: 80px 20px 56px;
+  /* Was a fixed 780px, which used only 61% of a 1280px viewport and 41% of a
+     1920px one — the header spanned the full width while the content sat in a
+     narrow column, so the page read as a phone layout dropped into a desktop. */
+  width: var(--shell);
+  margin: 0 auto;
+  padding: 80px 0 56px;
   display: flex; flex-direction: column; gap: 18px;
 }
 
@@ -273,7 +310,7 @@ body::before {
 .dash-date { font-size: 1.3rem; font-weight: 700; color: var(--text-1); }
 
 .dash-subtitle {
-  font-size: 0.75rem; color: var(--text-3);
+  font-size: 0.86rem; color: var(--text-3);
   margin-top: 3px; letter-spacing: 0.5px; text-transform: uppercase;
 }
 
@@ -282,7 +319,7 @@ body::before {
   padding: 5px 13px;
   background: var(--amber-dim);
   border: 1px solid rgba(245,158,11,0.25);
-  border-radius: 20px; font-size: 0.8rem; color: #fcd34d;
+  border-radius: 20px; font-size: 0.91rem; color: var(--sem-warn);
 }
 
 /* Score Hero */
@@ -313,7 +350,7 @@ body::before {
 }
 
 .score-label {
-  font-size: 0.76rem; color: var(--text-3);
+  font-size: 0.87rem; color: var(--text-3);
   text-transform: uppercase; letter-spacing: 1.5px;
 }
 
@@ -321,13 +358,13 @@ body::before {
 .score-confidence {
   display: flex; flex-direction: column; align-items: center;
   gap: 6px; padding: 16px 20px;
-  background: rgba(255,255,255,0.03);
+  background: var(--surface-1);
   border: 1px solid rgba(255,255,255,0.07);
   border-radius: var(--radius); min-width: 110px;
 }
 
 .confidence-label {
-  font-size: 0.68rem; color: var(--text-3);
+  font-size: 0.80rem; color: var(--text-3);
   text-transform: uppercase; letter-spacing: 1px;
 }
 
@@ -337,7 +374,7 @@ body::before {
 
 .confidence-bar-wrap {
   width: 100%; height: 5px;
-  background: rgba(255,255,255,0.07); border-radius: 5px; overflow: hidden;
+  background: var(--surface-track); border-radius: 5px; overflow: hidden;
 }
 
 .confidence-bar-fill {
@@ -349,22 +386,22 @@ body::before {
 /* Tier badges */
 .tier-badge {
   display: inline-block; padding: 4px 14px;
-  border-radius: 20px; font-size: 0.78rem; font-weight: 600; letter-spacing: 0.4px;
+  border-radius: 20px; font-size: 0.895rem; font-weight: 600; letter-spacing: 0.4px;
 }
 
-.tier-optimal  { background: var(--green-dim);  border: 1px solid rgba(16,185,129,0.4);  color: #34d399; }
-.tier-good     { background: var(--green-dim);  border: 1px solid rgba(16,185,129,0.25); color: #6ee7b7; }
-.tier-moderate { background: var(--amber-dim);  border: 1px solid rgba(245,158,11,0.35); color: #fcd34d; }
-.tier-low      { background: var(--orange-dim); border: 1px solid rgba(249,115,22,0.35); color: #fdba74; }
-.tier-critical { background: var(--red-dim);    border: 1px solid rgba(239,68,68,0.4);   color: #fca5a5; }
+.tier-optimal  { background: var(--green-dim);  border: 1px solid rgba(16,185,129,0.4);  color: var(--sem-good); }
+.tier-good     { background: var(--green-dim);  border: 1px solid rgba(16,185,129,0.25); color: var(--sem-good); }
+.tier-moderate { background: var(--amber-dim);  border: 1px solid rgba(245,158,11,0.35); color: var(--sem-warn); }
+.tier-low      { background: var(--orange-dim); border: 1px solid rgba(249,115,22,0.35); color: var(--sem-alert); }
+.tier-critical { background: var(--red-dim);    border: 1px solid rgba(239,68,68,0.4);   color: var(--sem-critical); }
 
 /* Score delta */
 .score-delta {
-  font-size: 0.78rem; font-weight: 600; padding: 3px 9px; border-radius: 20px;
+  font-size: 0.895rem; font-weight: 600; padding: 3px 9px; border-radius: 20px;
 }
 
-.score-delta.positive { color: #34d399; background: var(--green-dim); }
-.score-delta.negative { color: #fca5a5; background: var(--red-dim); }
+.score-delta.positive { color: var(--sem-good); background: var(--green-dim); }
+.score-delta.negative { color: var(--sem-critical); background: var(--red-dim); }
 .score-delta.neutral  { color: var(--text-3); }
 
 /* ============================================================
@@ -383,11 +420,11 @@ body::before {
 }
 
 .metric-label {
-  font-size: 0.7rem; color: var(--text-3);
+  font-size: 0.8125rem; color: var(--text-3);
   text-transform: uppercase; letter-spacing: 1px; font-weight: 600;
 }
 
-.metric-sublabel { font-size: 0.67rem; color: var(--text-3); }
+.metric-sublabel { font-size: 0.895rem; color: var(--text-3); }
 
 .metric-card.risk-low      { border-color: rgba(16,185,129,0.3); }
 .metric-card.risk-moderate { border-color: rgba(245,158,11,0.35); }
@@ -396,15 +433,15 @@ body::before {
 
 .metric-risk-value { font-size: 1.55rem; font-weight: 700; }
 
-.metric-card.risk-low      .metric-risk-value { color: #34d399; }
-.metric-card.risk-moderate .metric-risk-value { color: #fcd34d; }
-.metric-card.risk-high     .metric-risk-value { color: #fdba74; }
-.metric-card.risk-critical .metric-risk-value { color: #fca5a5; }
+.metric-card.risk-low      .metric-risk-value { color: var(--sem-good); }
+.metric-card.risk-moderate .metric-risk-value { color: var(--sem-warn); }
+.metric-card.risk-high     .metric-risk-value { color: var(--sem-alert); }
+.metric-card.risk-critical .metric-risk-value { color: var(--sem-critical); }
 
 .metric-number { font-size: 2rem; font-weight: 700; color: var(--text-1); line-height: 1.1; }
 
 .progress-bar {
-  height: 5px; background: rgba(255,255,255,0.07);
+  height: 5px; background: var(--surface-track);
   border-radius: 5px; overflow: hidden;
 }
 
@@ -429,20 +466,20 @@ body::before {
 
 .brief-item {
   padding: 14px 16px;
-  background: rgba(255,255,255,0.03);
+  background: var(--surface-1);
   border: 1px solid rgba(255,255,255,0.07);
   border-radius: var(--radius-sm);
 }
 
 .brief-item-label {
-  font-size: 0.68rem; color: var(--text-3);
+  font-size: 0.80rem; color: var(--text-3);
   text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;
 }
 
 .brief-item-value { font-size: 0.875rem; font-weight: 500; line-height: 1.5; }
 
-.brief-item-value.strength { color: #6ee7b7; }
-.brief-item-value.risk     { color: #fdba74; }
+.brief-item-value.strength { color: var(--sem-good); }
+.brief-item-value.risk     { color: var(--sem-alert); }
 .brief-item-value.action   { color: var(--text-2); }
 
 /* ============================================================
@@ -461,7 +498,7 @@ body::before {
 
 .window-item {
   padding: 16px 14px; text-align: center;
-  background: rgba(255,255,255,0.03);
+  background: var(--surface-1);
   border: 1px solid rgba(255,255,255,0.07);
   border-radius: var(--radius-sm);
   display: flex; flex-direction: column; gap: 6px;
@@ -470,11 +507,11 @@ body::before {
 .window-icon { font-size: 1.3rem; }
 
 .window-label {
-  font-size: 0.67rem; color: var(--text-3);
+  font-size: 0.895rem; color: var(--text-3);
   text-transform: uppercase; letter-spacing: 0.8px;
 }
 
-.window-value { font-size: 0.82rem; font-weight: 600; color: var(--text-2); line-height: 1.4; }
+.window-value { font-size: 0.92rem; font-weight: 600; color: var(--text-2); line-height: 1.4; }
 
 .window-item.peak        { border-color: rgba(139,92,246,0.25); }
 .window-item.break-w     { border-color: rgba(245,158,11,0.2); }
@@ -485,7 +522,7 @@ body::before {
    ============================================================ */
 
 .block-title {
-  font-size: 0.73rem; font-weight: 700; color: var(--text-3);
+  font-size: 0.94rem; font-weight: 700; color: var(--text-3);
   text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px;
 }
 
@@ -499,10 +536,10 @@ body::before {
   font-size: 0.895rem; line-height: 1.75; color: var(--text-2);
 }
 
-.risk-critical { color: #fca5a5; }
-.risk-high     { color: #fdba74; }
-.risk-moderate { color: #fcd34d; }
-.risk-low      { color: #34d399; }
+.risk-critical { color: var(--sem-critical); }
+.risk-high     { color: var(--sem-alert); }
+.risk-moderate { color: var(--sem-warn); }
+.risk-low      { color: var(--sem-good); }
 
 /* ============================================================
    EXPLAINABILITY BLOCK
@@ -514,7 +551,7 @@ body::before {
 }
 
 .explain-intro {
-  font-size: 0.77rem; color: var(--text-3); margin-bottom: 16px; margin-top: -8px;
+  font-size: 0.88rem; color: var(--text-3); margin-bottom: 16px; margin-top: -8px;
 }
 
 .contributors { display: flex; flex-direction: column; gap: 9px; }
@@ -524,12 +561,12 @@ body::before {
 }
 
 .contributor-label {
-  font-size: 0.82rem; color: var(--text-2); width: 120px; flex-shrink: 0;
+  font-size: 0.92rem; color: var(--text-2); width: 120px; flex-shrink: 0;
 }
 
 .contributor-bar-wrap {
   flex: 1; height: 8px;
-  background: rgba(255,255,255,0.06);
+  background: var(--surface-2);
   border-radius: 8px; overflow: visible;
   position: relative; display: flex; align-items: center;
 }
@@ -544,12 +581,12 @@ body::before {
 .contributor-bar.negative { background: linear-gradient(90deg, #ef4444, #f87171); }
 
 .contributor-delta {
-  font-size: 0.78rem; font-weight: 700; width: 40px;
+  font-size: 0.895rem; font-weight: 700; width: 40px;
   text-align: right; flex-shrink: 0;
 }
 
-.contributor-delta.positive { color: #34d399; }
-.contributor-delta.negative { color: #fca5a5; }
+.contributor-delta.positive { color: var(--sem-good); }
+.contributor-delta.negative { color: var(--sem-critical); }
 .contributor-delta.zero     { color: var(--text-3); }
 
 /* ============================================================
@@ -563,7 +600,7 @@ body::before {
 
 .trend-legend {
   display: flex; align-items: center; gap: 16px;
-  font-size: 0.72rem; color: var(--text-3); margin-bottom: 16px; flex-wrap: wrap;
+  font-size: 0.93rem; color: var(--text-3); margin-bottom: 16px; flex-wrap: wrap;
 }
 
 .legend-dot {
@@ -593,7 +630,7 @@ body::before {
   padding: 4px 11px;
   background: rgba(139,92,246,0.1);
   border: 1px solid rgba(139,92,246,0.24);
-  border-radius: 20px; font-size: 0.7rem; color: var(--purple-3); font-weight: 500;
+  border-radius: 20px; font-size: 0.8125rem; color: var(--purple-3); font-weight: 500;
 }
 
 .ai-dot {
@@ -608,7 +645,7 @@ body::before {
 }
 
 .insight-disclaimer {
-  font-size: 0.69rem; color: var(--text-3);
+  font-size: 0.80rem; color: var(--text-3);
   padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.06);
 }
 
@@ -625,7 +662,7 @@ body::before {
 
 .rec-card {
   display: flex; gap: 14px; padding: 15px;
-  background: rgba(255,255,255,0.03);
+  background: var(--surface-1);
   border: 1px solid rgba(255,255,255,0.07);
   border-radius: var(--radius-sm); transition: border-color 0.2s;
 }
@@ -634,11 +671,11 @@ body::before {
 
 .rec-icon { font-size: 1.35rem; line-height: 1; flex-shrink: 0; }
 .rec-content { flex: 1; }
-.rec-title { font-size: 0.85rem; font-weight: 600; color: var(--text-1); margin-bottom: 4px; }
-.rec-body  { font-size: 0.79rem; color: var(--text-3); line-height: 1.6; }
+.rec-title { font-size: 0.95rem; font-weight: 600; color: var(--text-1); margin-bottom: 4px; }
+.rec-body  { font-size: 0.90rem; color: var(--text-3); line-height: 1.6; }
 
 .no-recs, .rec-loading {
-  font-size: 0.85rem; color: var(--text-3); text-align: center; padding: 20px 0;
+  font-size: 0.95rem; color: var(--text-3); text-align: center; padding: 20px 0;
 }
 
 /* ============================================================
@@ -646,7 +683,7 @@ body::before {
    ============================================================ */
 
 .confidence-reason {
-  font-size: 0.62rem; color: var(--text-3);
+  font-size: 0.86rem; color: var(--text-3);
   text-align: center; line-height: 1.45; margin-top: 2px;
 }
 
@@ -666,7 +703,7 @@ body::before {
 }
 
 .trend-empty-msg {
-  font-size: 0.82rem; color: var(--text-3);
+  font-size: 0.92rem; color: var(--text-3);
 }
 
 .trend-unlock-list {
@@ -674,7 +711,7 @@ body::before {
 }
 
 .trend-unlock-list li {
-  font-size: 0.82rem; color: var(--text-3); padding: 8px 14px;
+  font-size: 0.92rem; color: var(--text-3); padding: 8px 14px;
   background: rgba(139,92,246,0.05);
   border: 1px solid rgba(139,92,246,0.12);
   border-radius: var(--radius-sm);
@@ -685,13 +722,13 @@ body::before {
 .trend-gate-progress { width: 100%; max-width: 260px; margin-top: 8px; }
 
 .trend-gate-label {
-  font-size: 0.74rem; color: var(--text-3); margin-bottom: 8px; text-align: left;
+  font-size: 0.95rem; color: var(--text-3); margin-bottom: 8px; text-align: left;
 }
 
 .trend-gate-label strong { color: var(--purple-3); }
 
 .trend-gate-bar-wrap {
-  height: 6px; background: rgba(255,255,255,0.07);
+  height: 6px; background: var(--surface-track);
   border-radius: 6px; overflow: hidden;
 }
 
@@ -720,33 +757,33 @@ body::before {
 .trend-pill {
   display: flex; align-items: center; gap: 5px;
   padding: 6px 13px; border-radius: 20px;
-  font-size: 0.76rem; font-weight: 600;
+  font-size: 0.87rem; font-weight: 600;
   border: 1px solid transparent;
 }
 
 .trend-pill.pill-good {
   background: rgba(16,185,129,0.1);
   border-color: rgba(16,185,129,0.25);
-  color: #34d399;
+  color: var(--sem-good);
 }
 
 .trend-pill.pill-bad {
   background: rgba(239,68,68,0.1);
   border-color: rgba(239,68,68,0.22);
-  color: #fca5a5;
+  color: var(--sem-critical);
 }
 
 .trend-pill.pill-flat {
-  background: rgba(255,255,255,0.04);
+  background: var(--surface-1);
   border-color: rgba(255,255,255,0.09);
   color: var(--text-3);
 }
 
-.pill-arrow { font-size: 0.85rem; }
+.pill-arrow { font-size: 0.95rem; }
 
-.pill-label { font-size: 0.72rem; opacity: 0.85; }
+.pill-label { font-size: 0.93rem; opacity: 0.85; }
 
-.pill-pct { font-size: 0.8rem; font-weight: 700; }
+.pill-pct { font-size: 0.91rem; font-weight: 700; }
 
 .trend-primary-insight {
   display: flex; flex-direction: column; gap: 4px;
@@ -754,7 +791,7 @@ body::before {
 }
 
 .trend-insight-label {
-  font-size: 0.67rem; font-weight: 700; color: var(--text-3);
+  font-size: 0.895rem; font-weight: 700; color: var(--text-3);
   text-transform: uppercase; letter-spacing: 1.2px;
 }
 
@@ -773,7 +810,7 @@ body::before {
 }
 
 .why-trend-title {
-  font-size: 0.72rem; font-weight: 700; color: var(--text-3);
+  font-size: 0.93rem; font-weight: 700; color: var(--text-3);
   text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 12px;
 }
 
@@ -795,7 +832,7 @@ body::before {
 .why-trend-item.neutral  .why-dot { background: var(--text-3); }
 
 .why-text {
-  font-size: 0.84rem; color: var(--text-2); line-height: 1.6;
+  font-size: 0.94rem; color: var(--text-2); line-height: 1.6;
 }
 
 /* ============================================================
@@ -813,7 +850,7 @@ body::before {
 
 .question-item {
   padding: 16px;
-  background: rgba(255,255,255,0.03);
+  background: var(--surface-1);
   border: 1px solid rgba(255,255,255,0.07);
   border-radius: var(--radius-sm);
   display: flex; flex-direction: column; gap: 5px;
@@ -836,7 +873,7 @@ body::before {
 }
 
 .question-q {
-  font-size: 0.68rem; font-weight: 700; color: var(--text-3);
+  font-size: 0.80rem; font-weight: 700; color: var(--text-3);
   text-transform: uppercase; letter-spacing: 0.8px;
 }
 
@@ -844,13 +881,13 @@ body::before {
   font-size: 0.875rem; font-weight: 600; color: var(--text-1); line-height: 1.45;
 }
 
-.question-a.answer-critical { color: #fca5a5; }
-.question-a.answer-high     { color: #fdba74; }
-.question-a.answer-moderate { color: #fcd34d; }
-.question-a.answer-ok       { color: #6ee7b7; }
+.question-a.answer-critical { color: var(--sem-critical); }
+.question-a.answer-high     { color: var(--sem-alert); }
+.question-a.answer-moderate { color: var(--sem-warn); }
+.question-a.answer-ok       { color: var(--sem-good); }
 
 .question-reason {
-  font-size: 0.77rem; color: var(--text-3); line-height: 1.55;
+  font-size: 0.88rem; color: var(--text-3); line-height: 1.55;
 }
 
 /* ============================================================
@@ -866,7 +903,7 @@ body::before {
 .rec-block-header .block-title { margin-bottom: 0; }
 
 .protocol-badge {
-  font-size: 0.68rem; font-weight: 600; letter-spacing: 0.5px;
+  font-size: 0.80rem; font-weight: 600; letter-spacing: 0.5px;
   padding: 4px 12px; border-radius: 20px;
   background: var(--purple-glow);
   border: 1px solid rgba(139,92,246,0.28);
@@ -876,13 +913,13 @@ body::before {
 .protocol-badge.priority-critical {
   background: rgba(239,68,68,0.1);
   border-color: rgba(239,68,68,0.3);
-  color: #fca5a5;
+  color: var(--sem-critical);
 }
 
 .protocol-badge.priority-high {
   background: rgba(249,115,22,0.1);
   border-color: rgba(249,115,22,0.3);
-  color: #fdba74;
+  color: var(--sem-alert);
 }
 
 /* ============================================================
@@ -891,10 +928,10 @@ body::before {
 
 .dash-footer {
   text-align: center; padding: 20px 0 8px;
-  font-size: 0.78rem; color: var(--text-3); line-height: 1.7;
+  font-size: 0.895rem; color: var(--text-3); line-height: 1.7;
 }
 
-.footer-note { font-size: 0.68rem; opacity: 0.6; }
+.footer-note { font-size: 0.80rem; opacity: 0.6; }
 
 /* ============================================================
    RESPONSIVE
@@ -921,3 +958,479 @@ body::before {
   .metrics-grid   { grid-template-columns: 1fr; }
   .schedule-inputs { flex-direction: column; }
 }
+
+/* ============================================================
+   CRISIS SUPPORT
+   Uses the existing purple palette. The emergency action is the
+   one place a warmer colour is justified, and it is never the
+   ONLY signal — every button is also labelled in words, so the
+   meaning does not depend on colour.
+   ============================================================ */
+
+.crisis-page {
+  width: var(--shell);
+  margin: 0 auto;
+  /* Top padding clears the fixed navbar — without it the h1 sits behind it. */
+  padding: 104px 0 80px;
+  position: relative;
+  z-index: 1;
+}
+
+.crisis-title {
+  font-size: clamp(28px, 5vw, 40px);
+  font-weight: 700;
+  color: var(--text-1);
+  margin: 0 0 24px;
+}
+
+.crisis-subtitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-2);
+  margin: 36px 0 14px;
+}
+
+.crisis-notice {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-left: 3px solid var(--purple-2);
+  border-radius: 14px;
+  padding: 20px 22px;
+  color: var(--text-2);
+  line-height: 1.65;
+  font-size: 15px;
+}
+
+.crisis-notice strong { color: var(--text-1); }
+
+.crisis-actions {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+.crisis-btn {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 18px 20px;
+  border-radius: 14px;
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  text-decoration: none;
+  transition: border-color 0.18s ease, transform 0.18s ease;
+}
+
+.crisis-btn:hover { border-color: var(--card-hover); transform: translateY(-2px); }
+
+/* Visible keyboard focus — these are the most important controls in the app. */
+.crisis-btn:focus-visible,
+.crisis-page a:focus-visible {
+  outline: 3px solid var(--purple-3);
+  outline-offset: 3px;
+}
+
+.crisis-btn-label { font-size: 17px; font-weight: 650; color: var(--text-1); }
+.crisis-btn-sub   { font-size: 14.5px; color: var(--text-3); line-height: 1.45; }
+
+.crisis-btn-primary { border-color: rgba(139, 92, 246, 0.45); }
+.crisis-btn-emergency { border-color: rgba(249, 115, 22, 0.45); }
+
+.crisis-region-note,
+.crisis-footer-note {
+  margin-top: 34px;
+  color: var(--text-3);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.crisis-region-note a,
+.crisis-footer-note a { color: var(--purple-3); }
+
+/* The crisis link in the navbar must stay visible on small screens. */
+.nav-link.crisis-link {
+  border: 1px solid rgba(249, 115, 22, 0.45);
+  border-radius: 10px;
+  padding: 7px 13px;
+}
+
+.nav-link.crisis-link:hover { border-color: rgba(249, 115, 22, 0.75); }
+
+@media (prefers-reduced-motion: reduce) {
+  .crisis-btn { transition: none; }
+  .crisis-btn:hover { transform: none; }
+}
+
+/* Product boundary notice — shown before any data is entered. */
+.product-notice {
+  max-width: 640px;
+  margin: 28px auto 0;
+  padding: 16px 18px;
+  border-radius: 12px;
+  background: rgba(20, 14, 48, 0.6);
+  border: 1px solid var(--card-border);
+  color: var(--text-3);
+  font-size: 14px;
+  line-height: 1.6;
+  text-align: left;
+}
+
+.product-notice a { color: var(--purple-3); white-space: nowrap; }
+.product-notice a:focus-visible { outline: 2px solid var(--purple-3); outline-offset: 2px; }
+
+/* ============================================================
+   RESPONSIVE — DESKTOP TIERS
+
+   The stylesheet previously had only two breakpoints, both
+   max-width (640px and 400px). It was built mobile-first and
+   never given a desktop tier, so on a 1280px screen the
+   dashboard used 61% of the viewport and on 1920px only 41% —
+   while the navbar spanned the full width, leaving the header
+   and the content visibly out of alignment.
+
+   These tiers grow the shell in steps rather than jumping
+   straight from a phone column to a wide desktop one.
+   ============================================================ */
+
+/* ── Tablet: 768px and up ── */
+@media (min-width: 768px) {
+  :root { --shell: min(720px, calc(100% - 48px)); }
+
+  /* Emergency actions pair up as soon as there is room for two. */
+  .crisis-actions { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ── Small desktop / large tablet: 1024px and up ── */
+@media (min-width: 1024px) {
+  :root { --shell: min(960px, calc(100% - 48px)); }
+
+  /* Align the navbar with the page shell so the header and the content
+     share the same left and right edges. */
+  .navbar {
+    width: var(--shell);
+    margin: 0 auto;
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  /* Prose stays readable even though the shell is wider. */
+  .narrative-text,
+  .insight-text,
+  .crisis-notice,
+  .crisis-region-note p,
+  .crisis-footer-note p,
+  .product-notice { max-width: var(--reading); }
+
+  /* Two balanced informational cards instead of two stacked paragraphs. */
+  .crisis-secondary {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    align-items: start;
+  }
+
+  .crisis-secondary > * { margin-top: 0; }
+}
+
+/* ── Desktop: 1280px and up ── */
+@media (min-width: 1280px) {
+  :root { --shell: min(1100px, calc(100% - 48px)); }
+
+  /* With the extra width the metric cards breathe rather than stretch. */
+  .metrics-grid   { grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .questions-grid { grid-template-columns: repeat(2, 1fr); }
+  .windows-grid   { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* ── Large desktop: 1600px and up ── */
+@media (min-width: 1600px) {
+  /* Deliberately does NOT keep growing. Past ~1100px a dashboard column
+     stops gaining anything and lines just get harder to track. The page
+     stays centred with generous margins instead. */
+  :root { --shell: 1100px; }
+}
+
+/* ── Tablet and below: horizontal margin ── */
+@media (max-width: 767px) {
+  :root { --shell: calc(100% - 32px); }   /* 16px each side on mobile */
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  :root { --shell: calc(100% - 48px); }   /* 24px each side on tablet */
+}
+
+/* ============================================================
+   LIGHT THEME
+
+   The dark theme stays the default — it is the product's identity
+   and what every screenshot shows. Light mode is a full palette
+   swap through the same tokens, so no component needs a second
+   set of rules.
+
+   Two states are handled deliberately:
+     :root[data-theme="light"]  — the user chose light
+     prefers-color-scheme       — the OS asked for light and the
+                                  user has expressed no preference
+
+   Contrast was checked against WCAG AA for body text: --text-1
+   (#241640) on --bg (#f7f5ff) is well past 4.5:1, and --text-3,
+   the dimmest text, is kept at ~4.6:1 rather than the washed-out
+   grey a naive inversion produces.
+   ============================================================ */
+
+:root[data-theme="light"] {
+  --bg:            #f7f5ff;
+  --card:          rgba(255, 255, 255, 0.86);
+  --card-border:   rgba(124, 58, 237, 0.16);
+  --card-hover:    rgba(124, 58, 237, 0.32);
+
+  /* Purples shift DARKER, not lighter — the same hues on a light
+     background would fail contrast as text. */
+  --purple-1:      #6d28d9;
+  --purple-2:      #7c3aed;
+  --purple-3:      #6425c7;
+  --purple-glow:   rgba(124, 58, 237, 0.10);
+
+  --text-1:        #241640;
+  --text-2:        #4c3a75;
+  --text-3:        #635785;
+
+  /* Semantic colours darkened so they stay legible on white. */
+  --green:         #047857;
+  --green-dim:     rgba(4, 120, 87, 0.12);
+  --amber:         #b45309;
+  --amber-dim:     rgba(180, 83, 9, 0.12);
+  --orange:        #c2410c;
+  --orange-dim:    rgba(194, 65, 12, 0.12);
+  --red:           #b91c1c;
+  --red-dim:       rgba(185, 28, 28, 0.10);
+  --blue:          #0369a1;
+
+  --shadow:        0 2px 24px rgba(76, 29, 149, 0.07);
+  --page-bg:       radial-gradient(ellipse at 20% 10%, #efe9ff 0%, #f7f5ff 60%);
+  --glow-1:        rgba(124, 58, 237, 0.07);
+  --particle:      rgba(109, 40, 217, 0.30);
+  --nav-bg:        rgba(255, 255, 255, 0.82);
+
+  /* Darkened so they pass AA on a light card rather than washing out. */
+  --sem-good:      #047857;
+  --sem-warn:      #7a4f06;
+  --sem-alert:     #b34700;
+  --sem-critical:  #b3261e;
+
+  --surface-1:     rgba(76, 29, 149, 0.045);
+  --surface-2:     rgba(76, 29, 149, 0.075);
+  --surface-track: rgba(76, 29, 149, 0.11);
+}
+
+/* Follow the operating system when the user has not chosen. */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg:            #f7f5ff;
+    --card:          rgba(255, 255, 255, 0.86);
+    --card-border:   rgba(124, 58, 237, 0.16);
+    --card-hover:    rgba(124, 58, 237, 0.32);
+    --purple-1:      #6d28d9;
+    --purple-2:      #7c3aed;
+    --purple-3:      #6425c7;
+    --purple-glow:   rgba(124, 58, 237, 0.10);
+    --text-1:        #241640;
+    --text-2:        #4c3a75;
+    --text-3:        #635785;
+    --green:         #047857;
+    --green-dim:     rgba(4, 120, 87, 0.12);
+    --amber:         #b45309;
+    --amber-dim:     rgba(180, 83, 9, 0.12);
+    --orange:        #c2410c;
+    --orange-dim:    rgba(194, 65, 12, 0.12);
+    --red:           #b91c1c;
+    --red-dim:       rgba(185, 28, 28, 0.10);
+    --blue:          #0369a1;
+    --shadow:        0 2px 24px rgba(76, 29, 149, 0.07);
+    --page-bg:       radial-gradient(ellipse at 20% 10%, #efe9ff 0%, #f7f5ff 60%);
+    --glow-1:        rgba(124, 58, 237, 0.07);
+    --particle:      rgba(109, 40, 217, 0.30);
+    --nav-bg:        rgba(255, 255, 255, 0.82);
+
+    /* Darkened so they pass AA on a light card rather than washing out. */
+    --sem-good:      #047857;
+    --sem-warn:      #7a4f06;
+    --sem-alert:     #b34700;
+    --sem-critical:  #b3261e;
+
+    --surface-1:     rgba(76, 29, 149, 0.045);
+    --surface-2:     rgba(76, 29, 149, 0.075);
+    --surface-track: rgba(76, 29, 149, 0.11);
+  }
+}
+
+/* The decorative glow uses the token so it dims in light mode. */
+body::before { background: radial-gradient(circle, var(--glow-1), transparent 65%); }
+
+/* ── Theme toggle button ── */
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: transparent;
+  border: 1px solid var(--card-border);
+  color: var(--text-2);
+  cursor: pointer;
+  font-size: 15px;
+  line-height: 1;
+  transition: border-color 0.18s ease, color 0.18s ease;
+}
+
+.theme-toggle:hover { border-color: var(--card-hover); color: var(--text-1); }
+
+.theme-toggle:focus-visible {
+  outline: 3px solid var(--purple-3);
+  outline-offset: 2px;
+}
+
+/* Show the icon for the theme you would switch TO, not the one you are in. */
+.theme-toggle .icon-dark  { display: none; }
+:root[data-theme="light"] .theme-toggle .icon-dark { display: inline; }
+:root[data-theme="light"] .theme-toggle .icon-light { display: none; }
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) .theme-toggle .icon-dark  { display: inline; }
+  :root:not([data-theme="dark"]) .theme-toggle .icon-light { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-toggle { transition: none; }
+}
+
+/* ============================================================
+   READABILITY
+
+   The original type scale bottomed out at 0.62rem (~10px) for
+   labels and body copy. That is below comfortable reading size,
+   and it reads worse in light mode: dark text on a light ground
+   at small sizes needs a little more weight and spacing to stay
+   crisp, where light-on-dark can get away with being thin.
+
+   Sizes were lifted one step across the sheet. These rules add
+   the line-height and letter-spacing that make the larger sizes
+   actually easier to read rather than just bigger.
+   ============================================================ */
+
+/* Prose gets a comfortable measure and leading. */
+.narrative-text,
+.insight-text,
+.question-reason,
+.brief-value,
+.rec-body,
+.crisis-notice,
+.crisis-region-note p,
+.crisis-footer-note p,
+.product-notice {
+  line-height: 1.65;
+}
+
+/* Uppercase micro-labels need letter-spacing to stay legible once
+   they are no longer tiny — without it they read as a solid block. */
+.metric-label,
+.block-title,
+.brief-label,
+.question-q,
+.dash-subtitle,
+.window-label,
+.crisis-btn-sub {
+  letter-spacing: 0.04em;
+}
+
+/* Light mode needs slightly more weight on secondary text. Thin dark
+   type on a light ground looks fainter than the same weight reversed. */
+:root[data-theme="light"] .question-reason,
+:root[data-theme="light"] .rec-body,
+:root[data-theme="light"] .brief-label,
+:root[data-theme="light"] .metric-sub,
+:root[data-theme="light"] .product-notice,
+:root[data-theme="light"] .crisis-btn-sub {
+  font-weight: 450;
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) .question-reason,
+  :root:not([data-theme="dark"]) .rec-body,
+  :root:not([data-theme="dark"]) .brief-label,
+  :root:not([data-theme="dark"]) .metric-sub,
+  :root:not([data-theme="dark"]) .product-notice,
+  :root:not([data-theme="dark"]) .crisis-btn-sub {
+    font-weight: 450;
+  }
+}
+
+/* Respect a larger base font size if the reader has set one in their
+   browser. Everything above is in rem, so this scales the whole page. */
+@media (min-width: 1024px) {
+  .narrative-text,
+  .insight-text { font-size: 0.98rem; }
+}
+
+/* ============================================================
+   TYPE ROLES
+
+   An audit of computed sizes found 12.8px being used for three
+   different jobs: micro-labels (fine), the question text in the
+   reflection cards (that is content), and the AI disclaimer —
+   123 characters of safety-relevant copy set smaller than
+   anything else on the page.
+
+   Size should follow the ROLE of the text, not where it happens
+   to sit in the markup:
+
+     ~16px  body and instructions
+     ~15px  supporting prose
+     ~14px  disclaimers and secondary copy — never the smallest
+     ~13px  uppercase micro-labels and metadata only
+   ============================================================ */
+
+/* Body and instructional copy — the things a person actually reads. */
+.narrative-text,
+.insight-text,
+.crisis-notice,
+.crisis-region-note p,
+.crisis-footer-note p {
+  font-size: 1rem;          /* 16px */
+  line-height: 1.68;
+}
+
+/* Questions are content, not labels. */
+.question-q {
+  font-size: 0.94rem;       /* ~15px */
+  line-height: 1.5;
+  letter-spacing: 0.01em;   /* not a micro-label, so drop the wide tracking */
+}
+
+.question-a { font-size: 0.98rem; line-height: 1.55; }
+.question-reason { font-size: 0.9rem; line-height: 1.6; }
+
+/* Disclaimers carry safety meaning. They may be quiet, but they must not be
+   the smallest text on the page — which is exactly what they were. */
+.insight-disclaimer,
+.product-notice,
+.checkin-footer,
+.dash-footer,
+.footer-note {
+  font-size: 0.875rem;      /* 14px */
+  line-height: 1.6;
+}
+
+/* Recommendation and summary values are read, so they get body treatment. */
+.brief-item-value,
+.rec-body,
+.rec-title { font-size: 0.94rem; line-height: 1.55; }
+
+/* 13px and below is reserved for uppercase micro-labels and metadata only. */
+.brief-item-label,
+.metric-label,
+.window-label,
+.dash-subtitle,
+.score-label,
+.brand-sub { font-size: 0.8125rem; }   /* 13px */

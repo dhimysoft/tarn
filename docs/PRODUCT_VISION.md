@@ -1,4 +1,4 @@
-# AURA — Product Vision
+# TARN — Product Vision
 
 ## One-Line Positioning
 
@@ -8,7 +8,7 @@
 
 ## The Platform Principle
 
-AURA is built on one foundational rule borrowed from enterprise AI design:
+TARN is built on one foundational rule borrowed from enterprise AI design:
 
 **AI provides insights. The platform makes recommendations.**
 
@@ -16,22 +16,22 @@ No LLM output reaches the user without passing through a deterministic recommend
 
 ---
 
-## What AURA Is
+## What TARN Is
 
-AURA is a **wellness intelligence layer** — a structured system that converts subjective daily experience into objective, scored, actionable signals.
+TARN is a **wellness intelligence layer** — a structured system that converts subjective daily experience into objective, scored, actionable signals.
 
 It sits between "how do you feel today?" and "here's what to do about it" — doing the pattern recognition, scoring, and contextualization that users cannot reliably do themselves when under stress or sleep-deprived.
 
 ---
 
-## What AURA Is Not
+## What TARN Is Not
 
 - Not a medical device
 - Not a mental health app
 - Not a diagnostic tool
 - Not a replacement for professional care
 
-AURA surfaces patterns. It does not interpret them clinically.
+TARN surfaces patterns. It does not interpret them clinically.
 
 ---
 
@@ -56,7 +56,7 @@ AURA surfaces patterns. It does not interpret them clinically.
 
 ## Competitive Differentiation
 
-| Dimension              | Generic Wellness Apps | Clinical Apps     | AURA                         |
+| Dimension              | Generic Wellness Apps | Clinical Apps     | TARN                         |
 |------------------------|----------------------|-------------------|------------------------------|
 | Medical claims         | Often vague          | Yes (licensed)    | None — advisory only         |
 | AI role               | Chatbot / tips       | None              | Structured insight layer     |

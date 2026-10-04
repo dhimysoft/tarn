@@ -1,4 +1,4 @@
-// AURA Intelligence — Wellness Intelligence Platform
+// TARN — Wellness Reflection Platform
 // Powered by DHIMLUX Labs · Author: Dhimy Jean
 //
 // Architecture: fully deterministic, runs entirely in the browser.
@@ -20,6 +20,11 @@ const SIGNAL_LABELS = {
    WELLNESS ENGINE — Deterministic. No LLM. Fully auditable.
    Ported from backend/server.js. Runs entirely in the browser.
    ============================================================ */
+
+// Minimum distinct days of check-ins before any trend, streak-based or
+// day-over-day claim is shown. Below this there is not enough data to make a
+// comparison that means anything.
+const MIN_HISTORY_DAYS = 3;
 
 const WEIGHTS = {
   sleep:       0.25,
@@ -72,16 +77,21 @@ function computeBurnoutRisk(signals, workload_hours = 0) {
 
 function buildBurnoutText(signals, burnout_risk) {
   const reasons = [];
-  if (signals.stress >= 7)   reasons.push("elevated stress");
-  else if (signals.stress >= 5) reasons.push("moderate stress");
-  if (signals.sleep  <= 5)   reasons.push("insufficient sleep");
-  else if (signals.sleep <= 6)  reasons.push("below-optimal sleep");
-  if (signals.mood   <= 4)   reasons.push("low mood");
+  // A signal is only named here when it is an actual NEGATIVE contributor in
+  // computeExplanation(), which scores every signal against a neutral midpoint
+  // of 5. These thresholds previously ran ahead of the score: sleep 6 is
+  // "Above Avg" and contributes +3, yet it was reported as "below-optimal
+  // sleep" — the reflection contradicted the breakdown directly above it.
+  if (signals.stress >= 7)       reasons.push("elevated stress");
+  else if (signals.stress === 6) reasons.push("moderate stress");
+  if (signals.sleep  <= 3)       reasons.push("insufficient sleep");
+  else if (signals.sleep === 4)  reasons.push("below-optimal sleep");
+  if (signals.mood   <= 4)       reasons.push("low mood");
   if (burnout_risk === "Low")
-    return "Burnout risk is low. Stress and recovery patterns are within a sustainable range.";
+    return "Your recent check-ins show stress and rest in a steady range.";
   if (!reasons.length)
-    return `Burnout risk is ${burnout_risk.toLowerCase()}. Monitor compounding factors over the coming days.`;
-  return `Burnout risk is ${burnout_risk.toLowerCase()} due to ${reasons.join(" and ")}.`;
+    return `Your recent check-ins show a ${burnout_risk.toLowerCase()} stress pattern. This is based only on what you reported.`;
+  return `You reported ${reasons.join(" and ")}. This describes your entries, not a health assessment.`;
 }
 
 function computeRecoveryIndex(signals) {
@@ -115,8 +125,14 @@ function computeFocusWindows(focusReadiness, hour) {
   } else {
     peak = "Tomorrow — prioritize sleep tonight";
   }
+  // A break needs a full hour that still ends by the cutoff. Later than that
+  // there is no sensible window to suggest, and formatHour() clamps anything
+  // past 23 back to 23 — which rendered "11:00 PM – 11:00 PM", a zero-length window.
+  const BREAK_CUTOFF_HOUR = 23;
   const breakStart = (hour < 12) ? 13 : Math.max(hour + 1, 13);
-  const break_window = `${formatHour(breakStart)} – ${formatHour(breakStart + 1)}`;
+  const break_window = (breakStart + 1 <= BREAK_CUTOFF_HOUR)
+    ? `${formatHour(breakStart)} – ${formatHour(breakStart + 1)}`
+    : "Wind down — rest is your next step";
   const recoveryStart = Math.max(19, hour + 3);
   const recovery = `After ${formatHour(recoveryStart)}`;
   return { peak, break_window, recovery };
@@ -141,31 +157,22 @@ function computeExplanation(signals) {
   .sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta));
 }
 
-function computeConfidence(signals, context) {
-  let score = 65;
-  const streak = Math.min(context.streak || 0, 7);
-  score += Math.round((streak / 7) * 15);
-  const historyLen = Math.min(context.history_length || 0, 7);
-  score += Math.round((historyLen / 7) * 10);
-  const highSleepLowEnergy  = signals.sleep  >= 8 && signals.energy <= 3;
-  const highStressHighMood  = signals.stress >= 8 && signals.mood   >= 8;
-  const highFocusHighStress = signals.focus  >= 8 && signals.stress >= 8;
-  if (highSleepLowEnergy || highStressHighMood || highFocusHighStress) score -= 8;
-  const lowSleepLowEnergy   = signals.sleep <= 4 && signals.energy <= 4;
-  const highSleepHighEnergy = signals.sleep >= 7 && signals.energy >= 7;
-  if (lowSleepLowEnergy || highSleepHighEnergy) score += 5;
-  return clamp(score, 50, 98);
-}
+/* ─────────────────────────────────────────────────────────────────────────
+   REMOVED: computeConfidence() and buildConfidenceReason().
 
-function buildConfidenceReason(context) {
-  const streak  = context.streak || 0;
-  const histLen = context.history_length || 0;
-  if (streak >= 7)  return `Based on ${streak} consecutive days of wellness data.`;
-  if (streak >= 4)  return `${streak}-day streak. Continue daily check-ins for higher accuracy.`;
-  if (streak >= 2)  return `${streak} consecutive days logged.`;
-  if (histLen > 1)  return `${histLen} sessions on record — streak was broken. Daily consistency improves accuracy.`;
-  return "First check-in. Accuracy grows after 3–7 consecutive days.";
-}
+   The old dashboard showed a "Confidence" percentage with a progress bar. It
+   was not a confidence interval or any statistical quantity — it began at a
+   hardcoded 65 and moved with the length of your check-in streak:
+
+       let score = 65;
+       score += Math.round((streak / 7) * 15);
+
+   Presenting that next to a wellness summary tells someone their reading is
+   "68% reliable". Nothing supported it, so it is deleted rather than renamed —
+   there is no honest version of a fabricated confidence figure.
+
+   See docs/CLAIMS_REGISTER.md.
+   ───────────────────────────────────────────────────────────────────────── */
 
 function computeIntelligenceBrief(signals, scores, explanation) {
   const positives = explanation.filter((c) => c.delta > 0).sort((a, b) => b.delta - a.delta);
@@ -175,11 +182,11 @@ function computeIntelligenceBrief(signals, scores, explanation) {
     : "Consistent daily tracking";
   const primary_risk = negatives.length
     ? `${negatives[0].label} (dragging score by ${negatives[0].delta})`
-    : "No critical risk signals today";
+    : "Nothing to flag today";
   const hour = new Date().getHours();
   let recommended_action;
   if (scores.focus_readiness >= 70 && hour < 13) {
-    recommended_action = "Schedule demanding work before noon — focus readiness is high";
+    recommended_action = "You reported high focus — you may want to use the morning for demanding work";
   } else if (scores.burnout_risk === "High" || scores.burnout_risk === "Critical") {
     recommended_action = "Protect recovery time today — reduce discretionary commitments";
   } else if (scores.recovery_index < 50) {
@@ -199,15 +206,15 @@ function computeProtocol(signals, scores) {
   if (burnout_risk === "Critical" && recovery_index < 40)
     return { id: "Recovery Protocol A", trigger: "Critical burnout + severe recovery deficit", priority: "critical" };
   if (burnout_risk === "Critical")
-    return { id: "Recovery Protocol B", trigger: "Critical burnout risk", priority: "critical" };
+    return { id: "Recovery Protocol B", trigger: "You reported very high stress", priority: "critical" };
   if (burnout_risk === "High" && recovery_index < 50)
-    return { id: "Recovery Protocol B", trigger: "High burnout risk + insufficient recovery", priority: "high" };
+    return { id: "Recovery Protocol B", trigger: "You reported high stress and low rest", priority: "high" };
   if (signals.stress >= 7 || burnout_risk === "High")
     return { id: "Stress Management Protocol A", trigger: "Elevated chronic stress pattern", priority: "high" };
   if (wellness_score >= 80 && focus_readiness >= 75)
-    return { id: "Optimal Performance Protocol", trigger: "High wellness + strong focus readiness", priority: "low" };
+    return { id: "Optimal Performance Protocol", trigger: "You reported feeling well and focused", priority: "low" };
   if (focus_readiness >= 75)
-    return { id: "Focus Optimization Protocol", trigger: "High focus readiness available", priority: "low" };
+    return { id: "Focus Optimization Protocol", trigger: "You reported strong focus", priority: "low" };
   if (wellness_score >= 80)
     return { id: "Maintenance Protocol", trigger: "Strong baseline wellness", priority: "low" };
   return { id: "Stability Protocol", trigger: "Balanced signal baseline", priority: "low" };
@@ -217,26 +224,26 @@ function buildRecommendations(signals, scores) {
   const hour = new Date().getHours();
   const { burnout_risk, recovery_index, focus_readiness } = scores;
   const pool = [];
-  if (signals.sleep <= 5)
+  if (signals.sleep <= 3)
     pool.push({ icon: "💤", title: "Address Sleep Deficit", body: "Sleep debt compounds daily. Even one extra hour tonight will measurably improve tomorrow's wellness and focus scores." });
-  else if (signals.sleep <= 7)
+  else if (signals.sleep === 4)
     pool.push({ icon: "🌙", title: "Optimize Sleep Window", body: "Sleep is slightly below optimal. A consistent sleep schedule — same time each night — improves recovery quality more than total hours alone." });
   if (signals.stress >= 7)
     pool.push({ icon: "🧘", title: "Activate Recovery Mode", body: "Stress is in the high range. Schedule a deliberate 10-minute break every 90 minutes. Sustained high stress accelerates burnout faster than workload alone." });
-  else if (signals.stress >= 5)
+  else if (signals.stress === 6)
     pool.push({ icon: "🌿", title: "Reduce Cognitive Load", body: "Moderate stress detected. Batch similar tasks together and defer low-priority decisions — cognitive switching cost adds up under stress." });
   if (burnout_risk === "Critical" || burnout_risk === "High")
-    pool.push({ icon: "⚠️", title: "Burnout Risk Is Elevated", body: "Multiple compounding stress factors are active simultaneously. Protect recovery time today — reduce discretionary commitments and prioritize sleep tonight." });
+    pool.push({ icon: "⚠️", title: "Current Stress Pattern Is Elevated", body: "Multiple compounding stress factors are active simultaneously. Protect recovery time today — reduce discretionary commitments and prioritize sleep tonight." });
   if (focus_readiness >= 75 && hour >= 8 && hour <= 11)
-    pool.push({ icon: "🎯", title: "Peak Focus Window — Act Now", body: "High focus readiness and morning prime window. Tackle your most cognitively demanding task in the next 90 minutes before the afternoon dip arrives." });
+    pool.push({ icon: "🎯", title: "Peak Focus Window — Act Now", body: "You reported strong focus this morning window. Tackle your most cognitively demanding task in the next 90 minutes before the afternoon dip arrives." });
   else if (focus_readiness >= 70)
-    pool.push({ icon: "🎯", title: "High Focus Readiness", body: "Your cognitive resources are strong right now. Use this window for deep work — analysis, writing, or complex problem-solving." });
+    pool.push({ icon: "🎯", title: "High Self-Reported Focus", body: "Your cognitive resources are strong right now. Use this window for deep work — analysis, writing, or complex problem-solving." });
   else if (focus_readiness < 45)
-    pool.push({ icon: "🔄", title: "Route to Lower-Demand Tasks", body: "Focus readiness is low today. Assign administrative, routine, or collaborative work to this period — save demanding tasks for when readiness recovers." });
+    pool.push({ icon: "🔄", title: "Route to Lower-Demand Tasks", body: "You reported lower focus today. You may want to consider administrative, routine, or collaborative work to this period — save demanding tasks for when readiness recovers." });
   if (signals.energy <= 4)
     pool.push({ icon: "⚡", title: "Restore Energy — Movement Over Caffeine", body: "Energy is depleted. A 20-minute walk or 10 minutes of movement is more effective at this level than caffeine, which may increase anxiety." });
   if (recovery_index < 50)
-    pool.push({ icon: "🔋", title: "Recovery Is Insufficient", body: "Your recovery index indicates incomplete restoration between sessions. Prioritize passive recovery: no screens before bed, hydration, and an earlier sleep time." });
+    pool.push({ icon: "🔋", title: "Recovery Is Insufficient", body: "You reported lower rest than usualoration between sessions. Prioritize passive recovery: no screens before bed, hydration, and an earlier sleep time." });
   if (signals.mood <= 3)
     pool.push({ icon: "🎧", title: "Mood Support", body: "Low mood affects decision-making and cognitive performance. Physical movement — even a 10-minute walk — has documented, immediate mood-elevating effects." });
   else if (signals.mood >= 8)
@@ -314,7 +321,7 @@ function computeEngineBurnoutTrajectory(burnout_risk, trend_intelligence) {
       answer: "Trending toward elevated risk.",
       reason: reasons.length
         ? `Pattern detected: ${reasons.join(", ")}.`
-        : `Burnout risk is ${burnout_risk.toLowerCase()} — compounding factors are active.`,
+        : `Your recent entries show a ${burnout_risk.toLowerCase()} stress pattern.`,
     };
   }
   if (burnout_risk === "Moderate") {
@@ -333,43 +340,60 @@ function computeEngineBurnoutTrajectory(burnout_risk, trend_intelligence) {
   };
 }
 
-function computeEngineWorkloadFeasibility(signals, scores, workload_hours) {
-  if (!workload_hours || workload_hours === 0)
-    return { feasible: true, rating: "N/A", answer: "No workload scheduled today.", reason: "No study or work hours were entered." };
-  const { focus_readiness, recovery_index, burnout_risk } = scores;
-  const capacity = Math.round(
-    focus_readiness * 0.45 +
-    recovery_index  * 0.30 +
-    (10 - signals.stress) * 10 * 0.25
-  );
-  const sustainableHours = capacity >= 78 ? 8 : capacity >= 62 ? 6 : capacity >= 45 ? 4 : 2;
-  if (burnout_risk === "Critical") {
+/* How does today's workload feel?
+
+   REPLACES computeEngineWorkloadFeasibility(), which told users how many hours
+   they could work:
+
+       const sustainableHours = capacity >= 78 ? 8 : capacity >= 62 ? 6 : ... ;
+       "Wellness signals support approximately 4 focused hours today."
+
+   That is a prediction about a person's capacity derived from five slider
+   positions. It has no evidential basis and is exactly the claim a wellness
+   product must not make.
+
+   This version asserts nothing about capacity. It reflects back what the user
+   entered, compares it only to their OWN recent average, and leaves the
+   judgement with them. */
+function describeWorkload(workload_hours, history) {
+  if (!workload_hours || workload_hours === 0) {
     return {
-      feasible: false, rating: "High Risk",
-      answer: "Not advisable at full capacity today.",
-      reason: `Critical burnout conditions are active. Limit to ${sustainableHours} hours of essential tasks only.`,
+      answer: "No study or work hours entered today.",
+      reason: "Add them on your next check-in if you would like to see them here.",
     };
   }
-  if (workload_hours > sustainableHours + 2) {
+
+  // Compare only against this user's own recent entries — never a population norm.
+  const priorHours = (history || [])
+    .map((h) => h?.context?.workload_hours)
+    .filter((n) => typeof n === "number" && n > 0);
+
+  if (priorHours.length < 3) {
     return {
-      feasible: false, rating: "Overloaded",
-      answer: `Scheduled load (${workload_hours}h) exceeds current capacity.`,
-      reason: `Wellness signals support approximately ${sustainableHours} focused hours today. Defer low-priority tasks.`,
+      answer: `You planned ${workload_hours} ${workload_hours === 1 ? "hour" : "hours"} today.`,
+      reason: "After a few more check-ins you will be able to see how this compares with your own usual pattern.",
     };
   }
-  if (workload_hours > sustainableHours) {
-    return {
-      feasible: true, rating: "Stretched",
-      answer: "Achievable — at the edge of current capacity.",
-      reason: `${workload_hours}h is at your upper limit. Prioritize ruthlessly and protect your recovery window.`,
-    };
+
+  const average = priorHours.reduce((a, b) => a + b, 0) / priorHours.length;
+  const rounded = Math.round(average * 10) / 10;
+  const difference = workload_hours - average;
+
+  let comparison;
+  if (Math.abs(difference) < 1) {
+    comparison = `That is close to your recent average of ${rounded} hours.`;
+  } else if (difference > 0) {
+    comparison = `That is more than your recent average of ${rounded} hours.`;
+  } else {
+    comparison = `That is less than your recent average of ${rounded} hours.`;
   }
+
   return {
-    feasible: true, rating: "Achievable",
-    answer: `Yes — ${workload_hours}h is within current capacity.`,
-    reason: "Today's workload aligns with your wellness signals. Protect your peak focus windows.",
+    answer: `You planned ${workload_hours} ${workload_hours === 1 ? "hour" : "hours"} today.`,
+    reason: `${comparison} Only you can judge how that feels alongside how you are doing today.`,
   };
 }
+
 
 // Master function: computes the full scored payload from signals + context.
 function computeAllScores(signals, context) {
@@ -387,12 +411,10 @@ function computeAllScores(signals, context) {
   const scores = { wellness_score, tier, burnout_risk, burnout_text, recovery_index, focus_readiness, delta };
 
   const explanation        = computeExplanation(signals);
-  const confidence         = computeConfidence(signals, context);
-  const confidence_reason  = buildConfidenceReason(context);
   const intelligence_brief = computeIntelligenceBrief(signals, scores, explanation);
   const trend_intelligence = computeEngineTrendIntelligence(context.history || []);
   const burnout_trajectory = computeEngineBurnoutTrajectory(burnout_risk, trend_intelligence);
-  const workload_feasibility = computeEngineWorkloadFeasibility(signals, scores, context.workload_hours || 0);
+  const workload_reflection = describeWorkload(context.workload_hours || 0, context.history || []);
   const protocol           = computeProtocol(signals, scores);
   const recommendations    = buildRecommendations(signals, scores);
 
@@ -400,12 +422,10 @@ function computeAllScores(signals, context) {
     ...scores,
     focus_windows,
     explanation,
-    confidence,
-    confidence_reason,
     intelligence_brief,
     trend_intelligence,
     burnout_trajectory,
-    workload_feasibility,
+    workload_reflection,
     protocol,
     recommendations,
   };
@@ -424,23 +444,23 @@ function computeLocalInsight({ wellness_score, tier, burnout_risk, recovery_inde
   }
 
   if (burnout_risk === "Critical" || burnout_risk === "High") {
-    parts.push(`Burnout risk is ${burnout_risk.toLowerCase()} — compounding stress and recovery factors are active.`);
+    parts.push(`Your recent entries show a ${burnout_risk.toLowerCase()} stress pattern, based only on what you reported.`);
   } else if (recovery_index >= 70) {
-    parts.push(`Recovery index is strong at ${recovery_index}/100, indicating good restoration capacity.`);
+    parts.push(`Your rest and recovery check-in is ${recovery_index}/100 — a summary of the sleep, stress and mood values you entered.`);
   } else if (recovery_index < 50) {
-    parts.push(`Recovery index is below threshold at ${recovery_index}/100 — prioritize sleep and passive recovery.`);
+    parts.push(`Your rest and recovery check-in is ${recovery_index}/100. You may want to consider what would help you rest.`);
   } else {
     parts.push(`Recovery capacity is moderate — consistent sleep timing will compound positively over the next 2–3 days.`);
   }
 
   if (focus_readiness >= 70) {
-    parts.push(`Focus readiness is high — use current cognitive capacity for demanding work.`);
+    parts.push("You reported feeling focused today.");
   } else if (delta != null && delta >= 5) {
     parts.push(`Wellness improved ${delta} points from the previous session — maintain current patterns.`);
   } else if (delta != null && delta <= -5) {
     parts.push(`Wellness declined ${Math.abs(delta)} points — monitor sleep and stress signals over the next 2 days.`);
   } else {
-    parts.push(`Track signals over the next 2–3 days to enable trend intelligence and burnout forecasting.`);
+    parts.push(`Track signals over the next 2–3 days to build your wellness pattern history.`);
   }
 
   return parts.join(" ");
@@ -467,6 +487,13 @@ function saveTodaySession(data) {
   const all = getSessions().filter((s) => s.date !== getTodayStr());
   all.unshift({ date: getTodayStr(), timestamp: Date.now(), ...data });
   saveSessions(all.slice(0, 30));
+}
+
+// The app has no name field yet. If one is added, write it to this key and the
+// greeting picks it up; with no name stored the greeting renders without a comma.
+function getUserName() {
+  try { return (localStorage.getItem("tarn_user_name") || "").trim(); }
+  catch { return ""; }
 }
 
 function getStreak() {
@@ -501,7 +528,11 @@ function initParticles() {
 
   (function animate() {
     ctx.clearRect(0, 0, c.width, c.height);
-    ctx.fillStyle = "rgba(139,92,246,0.11)";
+    // Read the colour from the theme token instead of hardcoding it, so the
+    // particles dim correctly in light mode rather than staying near-invisible.
+    ctx.fillStyle =
+      getComputedStyle(document.documentElement).getPropertyValue("--particle").trim() ||
+      "rgba(139,92,246,0.11)";
     pts.forEach((p) => {
       ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.fill();
       p.x += p.dx; p.y += p.dy;
@@ -523,7 +554,13 @@ function initCheckinPage() {
 
   const h = new Date().getHours();
   const el = document.getElementById("greeting");
-  if (el) el.textContent = h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening";
+  if (el) {
+    const timeOfDay = h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening";
+    const name = getUserName();
+    // The comma belongs to the name, not to the greeting. It used to be
+    // hardcoded in index.html and was left dangling as "Good evening,".
+    el.textContent = name ? `${timeOfDay}, ${name}` : timeOfDay;
+  }
 
   const streak = getStreak();
   const streakEl = document.getElementById("streak-display");
@@ -553,7 +590,12 @@ function handleCheckin(e) {
   btn.textContent = "Analyzing..."; btn.disabled = true;
 
   const streak = getStreak();
-  const consistency = streak > 0
+  // Consistency can only be measured once there is a history to measure it
+  // against. Below MIN_HISTORY_DAYS it stays at the neutral midpoint of 5,
+  // which contributes exactly 0 in computeExplanation() — a new user is no
+  // longer penalised for not yet having a streak.
+  const historyDays = getSessions().filter((x) => x.date !== getTodayStr()).length + 1;
+  const consistency = historyDays >= MIN_HISTORY_DAYS
     ? Math.min(10, Math.max(1, Math.round((Math.min(streak, 7) / 7) * 9) + 1))
     : 5;
 
@@ -604,8 +646,8 @@ function renderDashboard(session) {
   const {
     wellness_score, tier, burnout_risk, burnout_text,
     recovery_index, focus_readiness, delta,
-    confidence, confidence_reason, explanation, intelligence_brief, focus_windows,
-    trend_intelligence, burnout_trajectory, workload_feasibility, protocol,
+    explanation, intelligence_brief, focus_windows,
+    trend_intelligence, burnout_trajectory, workload_reflection, protocol,
   } = scores;
 
   // ── Header ──────────────────────────────────────────────
@@ -622,22 +664,22 @@ function renderDashboard(session) {
   tierEl.textContent = tier;
   tierEl.className = `tier-badge tier-${tier.toLowerCase()}`;
 
+  // Where "-5 from yesterday" came from on a day-1 streak: `prior` in
+  // handleCheckin() is simply the most recent session that is not today, at ANY
+  // age. Leftover check-ins from earlier testing sit in localStorage for 30
+  // days, so a fresh streak still found a "prior" score days or weeks old and
+  // labelled the difference "yesterday". The comparison is now withheld until
+  // MIN_HISTORY_DAYS and no longer claims to know when the last one was.
   const deltaEl = document.getElementById("score-delta");
-  if (delta != null) {
-    deltaEl.textContent = delta >= 0 ? `+${delta} from yesterday` : `${delta} from yesterday`;
+  const dayCount = getSessions().length;
+  if (dayCount < MIN_HISTORY_DAYS) {
+    deltaEl.textContent = "Check in a few more days to see your patterns";
+    deltaEl.className = "score-delta neutral";
+  } else if (delta != null) {
+    deltaEl.textContent = `${delta >= 0 ? "+" : ""}${delta} pts from your last check-in`;
     deltaEl.className = `score-delta ${delta >= 0 ? "positive" : "negative"}`;
   } else {
     deltaEl.textContent = "First session"; deltaEl.className = "score-delta neutral";
-  }
-
-  // ── Confidence ───────────────────────────────────────────
-  if (confidence != null) {
-    animateNumberSuffix("confidence-value", confidence, "%", 1000);
-    setTimeout(() => {
-      const bar = document.getElementById("confidence-bar");
-      if (bar) bar.style.width = `${confidence}%`;
-    }, 200);
-    setText("confidence-reason", confidence_reason || "");
   }
 
   // ── Metrics ───────────────────────────────────────────────
@@ -652,7 +694,7 @@ function renderDashboard(session) {
   animateNumber("fr-value", focus_readiness, 1000);
   setTimeout(() => animateBar("fr-bar", focus_readiness, barColor(focus_readiness)), 300);
 
-  // ── Intelligence Brief ───────────────────────────────────
+  // ── Wellness Summary ───────────────────────────────────
   if (intelligence_brief) {
     setText("brief-strength", intelligence_brief.primary_strength);
     setText("brief-risk",     intelligence_brief.primary_risk);
@@ -697,7 +739,7 @@ function renderDashboard(session) {
     protoBadge.className = `protocol-badge priority-${protocol.priority}`;
   }
 
-  // ── Trend Intelligence Section ────────────────────────────
+  // ── Wellness Pattern History Section ────────────────────────────
   renderTrendSection(trend_intelligence);
 
   // ── Key Questions ─────────────────────────────────────────
@@ -741,20 +783,23 @@ function buildNarrative({ wellness_score, tier, burnout_risk, burnout_text, reco
       ? burnout_text
       : `<strong class="${riskClass}">${burnout_text}</strong>`
   );
-  if (delta != null) {
+  // Same gate as the delta chip — the narrative must not narrate a
+  // comparison the dashboard is withholding, nor call an older session
+  // "yesterday".
+  if (delta != null && getSessions().length >= MIN_HISTORY_DAYS) {
     if (delta >= 5)
-      parts.push(`Wellness improved <strong>+${delta} points</strong> since your last check-in — a meaningful positive shift.`);
+      parts.push(`Wellness improved <strong>+${delta} pts</strong> since your last check-in — a meaningful positive shift.`);
     else if (delta <= -5)
-      parts.push(`Wellness declined <strong>${delta} points</strong> since your last session. If this continues for 2+ days, consider adjusting your schedule.`);
+      parts.push(`Wellness declined <strong>${delta} pts</strong> since your last check-in. If this continues for 2+ days, consider adjusting your schedule.`);
     else if (delta !== 0)
-      parts.push(`Score is stable (${delta > 0 ? "+" : ""}${delta} from yesterday).`);
+      parts.push(`Score is stable (${delta > 0 ? "+" : ""}${delta} pts from your last check-in).`);
   }
   if (focus_readiness >= 75)
-    parts.push(`Focus readiness is high — cognitive resources are available for demanding work.`);
+    parts.push("You reported feeling focused today.");
   else if (focus_readiness < 45)
-    parts.push(`Focus readiness is low — route today's work toward lighter tasks.`);
+    parts.push("You reported lower focus today. You may want to consider lighter tasks.");
   if (recovery_index < 50)
-    parts.push(`Recovery index is below threshold. Prioritize passive recovery tonight.`);
+    parts.push("Your reported rest has been lower than usual. You may want to consider an earlier night.");
   return parts.join(" ");
 }
 
@@ -765,61 +810,65 @@ function buildNarrative({ wellness_score, tier, burnout_risk, burnout_text, reco
 const BURNOUT_NUM = { Low: 20, Moderate: 50, High: 72, Critical: 92 };
 
 function computeTrendSummary(sessions) {
-  if (sessions.length < 3) return null;
-  const recent   = sessions.slice(0, Math.min(3, sessions.length));
-  const baseline = sessions.length >= 6
-    ? sessions.slice(3, 6)
-    : [sessions[sessions.length - 1]];
+  if (sessions.length < MIN_HISTORY_DAYS) return null;
+
+  // Recent and baseline must not overlap. The previous split compared
+  // sessions.slice(0, 3) against [the oldest session] — with exactly three
+  // check-ins the "recent" window CONTAINED the baseline, so one low early
+  // score made every metric look like a huge gain ("Wellness +70%" on day 3).
+  const split    = Math.max(1, Math.floor(sessions.length / 2));
+  const recent   = sessions.slice(0, split);
+  const baseline = sessions.slice(split);
 
   const avg = (arr, fn) => {
     const vals = arr.map(fn).filter((v) => typeof v === "number");
     return vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : null;
   };
-  const pct = (r, o) =>
-    r == null || o == null || o === 0 ? null : Math.round(((r - o) / o) * 100);
 
-  const rW = avg(recent,   (s) => s?.scores?.wellness_score);
-  const oW = avg(baseline, (s) => s?.scores?.wellness_score);
-  const rR = avg(recent,   (s) => s?.scores?.recovery_index);
-  const oR = avg(baseline, (s) => s?.scores?.recovery_index);
-  const rF = avg(recent,   (s) => s?.scores?.focus_readiness);
-  const oF = avg(baseline, (s) => s?.scores?.focus_readiness);
-  const rB = avg(recent,   (s) => BURNOUT_NUM[s?.scores?.burnout_risk] ?? null);
-  const oB = avg(baseline, (s) => BURNOUT_NUM[s?.scores?.burnout_risk] ?? null);
+  // Absolute point difference, not percent change. A percentage taken over a
+  // handful of self-reported scores is unstable and implies a precision the
+  // data does not have — a stress baseline of 20 moving to 40 reads "+100%".
+  const pts = (r, o) => (r == null || o == null) ? null : Math.round(r - o);
 
-  const wellnessPct = pct(rW, oW);
-  const recoveryPct = pct(rR, oR);
-  const focusPct    = pct(rF, oF);
-  const burnoutPct  = pct(rB, oB);
+  const wellnessPts = pts(avg(recent,   (x) => x?.scores?.wellness_score),
+                          avg(baseline, (x) => x?.scores?.wellness_score));
+  const recoveryPts = pts(avg(recent,   (x) => x?.scores?.recovery_index),
+                          avg(baseline, (x) => x?.scores?.recovery_index));
+  const focusPts    = pts(avg(recent,   (x) => x?.scores?.focus_readiness),
+                          avg(baseline, (x) => x?.scores?.focus_readiness));
+  const burnoutPts  = pts(avg(recent,   (x) => BURNOUT_NUM[x?.scores?.burnout_risk] ?? null),
+                          avg(baseline, (x) => BURNOUT_NUM[x?.scores?.burnout_risk] ?? null));
 
-  const improving = [wellnessPct, recoveryPct, focusPct].filter((p) => p != null && p > 3).length;
-  const declining = [wellnessPct, recoveryPct, focusPct].filter((p) => p != null && p < -3).length;
-  const burnoutImproving = burnoutPct != null && burnoutPct < -5;
-  const burnoutWorsening = burnoutPct != null && burnoutPct > 5;
+  // Primary Insight is derived from exactly the values the chips render, so the
+  // two can no longer disagree. The old version picked its label from a
+  // fallback chain that ended at "Focus" regardless of what focus actually did
+  // — which is how "Focus is declining" appeared beside a Focus chip of +82%.
+  const metrics = [
+    { label: "Wellness",               pts: wellnessPts, invert: false },
+    { label: "Recovery",               pts: recoveryPts, invert: false },
+    { label: "Focus",                  pts: focusPts,    invert: false },
+    { label: "Current Stress Pattern", pts: burnoutPts,  invert: true  },
+  ];
+  const MOVED_PTS = 3;
+  const moved = metrics.filter((m) => m.pts != null && Math.abs(m.pts) >= MOVED_PTS);
 
   let primaryInsight;
-  if (improving >= 2 && burnoutImproving)
-    primaryInsight = "Multiple wellness metrics are trending positively with declining burnout risk.";
-  else if (recoveryPct != null && recoveryPct > 3 && burnoutImproving)
-    primaryInsight = "Recovery is improving while burnout risk continues to decline.";
-  else if (declining >= 2 || burnoutWorsening) {
-    const label = recoveryPct != null && recoveryPct < -3 ? "Recovery" : wellnessPct != null && wellnessPct < -3 ? "Wellness" : "Focus";
-    primaryInsight = `${label} is declining — multiple compounding factors require attention.`;
-  } else if (improving >= 1) {
-    const label = recoveryPct != null && recoveryPct > 3 ? "Recovery" : wellnessPct != null && wellnessPct > 3 ? "Wellness" : "Focus";
-    primaryInsight = `${label} is on an upward trend. Maintain current patterns.`;
-  } else if (declining >= 1) {
-    const label = recoveryPct != null && recoveryPct < -3 ? "Recovery" : wellnessPct != null && wellnessPct < -3 ? "Wellness" : "Focus";
-    primaryInsight = `${label} shows a declining trend — review recent sleep and stress signals.`;
+  if (!moved.length) {
+    primaryInsight = "Your self-reported signals are holding steady.";
   } else {
-    primaryInsight = "Wellness signals are holding steady across all tracked metrics.";
+    const top  = moved.reduce((a, b) => (Math.abs(b.pts) > Math.abs(a.pts) ? b : a));
+    const good = top.invert ? top.pts < 0 : top.pts > 0;
+    const dir  = top.invert ? (good ? "easing" : "rising")
+                            : (good ? "improving" : "declining");
+    const sign = top.pts > 0 ? "+" : "";
+    primaryInsight = `${top.label} is ${dir} — ${sign}${top.pts} pts versus your earlier check-ins.`;
   }
 
-  return { wellnessPct, recoveryPct, focusPct, burnoutPct, primaryInsight };
+  return { wellnessPts, recoveryPts, focusPts, burnoutPts, primaryInsight };
 }
 
 function computeWhyThisTrend(sessions, serverInsights) {
-  if (sessions.length < 3) return [];
+  if (sessions.length < MIN_HISTORY_DAYS) return [];
   const recent   = sessions.slice(0, Math.min(3, sessions.length));
   const baseline = sessions.length >= 4
     ? sessions.slice(-Math.min(3, sessions.length - 1))
@@ -849,9 +898,9 @@ function computeWhyThisTrend(sessions, serverInsights) {
     const energyPct = pctOf(avgSig(recent, "energy"), avgSig(baseline, "energy"));
     if (focusPct > 5) {
       const reason = energyPct > 5 ? "higher energy levels" : "reduced stress and better sleep";
-      explanations.push({ type: "positive", text: `Focus readiness improved due to ${reason}.` });
+      explanations.push({ type: "positive", text: `You reported better focus, alongside ${reason}.` });
     } else {
-      explanations.push({ type: "negative", text: `Focus readiness declined — energy and sleep signals dropped.` });
+      explanations.push({ type: "negative", text: "You reported lower focus, energy and sleep than before." });
     }
   }
 
@@ -862,9 +911,9 @@ function computeWhyThisTrend(sessions, serverInsights) {
     const avgOB = oBurn.reduce((a, b) => a + b, 0) / oBurn.length;
     const burnPct = pctOf(avgRB, avgOB);
     if (burnPct < -10)
-      explanations.push({ type: "positive", text: "Burnout risk declined because workload and stress patterns stabilized." });
+      explanations.push({ type: "positive", text: "You reported steadier workload and stress than in earlier entries." });
     else if (burnPct > 10)
-      explanations.push({ type: "negative", text: "Burnout risk increased — stress signals are compounding across recent sessions." });
+      explanations.push({ type: "negative", text: "You have reported higher stress across several recent check-ins." });
   }
 
   if (!explanations.length && serverInsights?.length) {
@@ -890,24 +939,24 @@ function renderTrendSection(serverInsights) {
   const sessionsFwd = getSessions().slice(0, 7);
   const count = sessionsFwd.length;
 
-  if (count < 3) {
+  if (count < MIN_HISTORY_DAYS) {
     container.className = "trend-block";
     container.innerHTML = `
-      <div class="block-title">Trend Intelligence</div>
+      <div class="block-title">Wellness Pattern History</div>
       <div class="trend-empty">
         <div class="trend-empty-icon">📊</div>
-        <div class="trend-empty-title">Not enough wellness history yet.</div>
-        <p class="trend-empty-msg">Complete 3 daily check-ins to unlock:</p>
+        <div class="trend-empty-title">Check in a few more days to see your patterns.</div>
+        <p class="trend-empty-msg">Complete ${MIN_HISTORY_DAYS} daily check-ins to unlock:</p>
         <ul class="trend-unlock-list">
           <li>Wellness Trends</li>
-          <li>Burnout Forecasting</li>
+          <li>Wellness Pattern History</li>
           <li>Recovery Analytics</li>
           <li>Focus Intelligence</li>
         </ul>
         <div class="trend-gate-progress">
-          <div class="trend-gate-label">Data points collected: <strong>${count} of 3</strong></div>
+          <div class="trend-gate-label">Data points collected: <strong>${count} of ${MIN_HISTORY_DAYS}</strong></div>
           <div class="trend-gate-bar-wrap">
-            <div class="trend-gate-bar-fill" style="width:${Math.round((count / 3) * 100)}%"></div>
+            <div class="trend-gate-bar-fill" style="width:${Math.round((count / MIN_HISTORY_DAYS) * 100)}%"></div>
           </div>
         </div>
       </div>`;
@@ -918,23 +967,23 @@ function renderTrendSection(serverInsights) {
   const why     = computeWhyThisTrend(sessionsFwd, serverInsights);
 
   const pillData = [
-    { label: "Wellness",     pct: summary.wellnessPct, invert: false },
-    { label: "Recovery",     pct: summary.recoveryPct, invert: false },
-    { label: "Focus",        pct: summary.focusPct,    invert: false },
-    { label: "Burnout Risk", pct: summary.burnoutPct,  invert: true  },
+    { label: "Wellness",               pts: summary.wellnessPts, invert: false },
+    { label: "Recovery",               pts: summary.recoveryPts, invert: false },
+    { label: "Focus",                  pts: summary.focusPts,    invert: false },
+    { label: "Current Stress Pattern", pts: summary.burnoutPts,  invert: true  },
   ];
 
-  const pillsHTML = pillData.map(({ label, pct, invert }) => {
-    if (pct == null) return "";
-    const good  = invert ? pct < 0 : pct > 0;
-    const flat  = pct === 0;
+  const pillsHTML = pillData.map(({ label, pts, invert }) => {
+    if (pts == null) return "";
+    const good  = invert ? pts < 0 : pts > 0;
+    const flat  = pts === 0;
     const cls   = flat ? "pill-flat" : good ? "pill-good" : "pill-bad";
-    const arrow = pct > 0 ? "↑" : pct < 0 ? "↓" : "→";
-    const sign  = pct > 0 ? "+" : "";
+    const arrow = pts > 0 ? "↑" : pts < 0 ? "↓" : "→";
+    const sign  = pts > 0 ? "+" : "";
     return `<div class="trend-pill ${cls}">
       <span class="pill-arrow">${arrow}</span>
       <span class="pill-label">${label}</span>
-      <span class="pill-pct">${sign}${pct}%</span>
+      <span class="pill-pct">${sign}${pts} pts</span>
     </div>`;
   }).join("");
 
@@ -950,7 +999,7 @@ function renderTrendSection(serverInsights) {
 
   container.className = "trend-block";
   container.innerHTML = `
-    <div class="block-title">Trend Intelligence</div>
+    <div class="block-title">Wellness Pattern History</div>
     <div class="trend-summary-card">
       <div class="trend-pills">${pillsHTML}</div>
       <div class="trend-primary-insight">
@@ -962,7 +1011,7 @@ function renderTrendSection(serverInsights) {
       <span class="legend-dot" style="background:#8b5cf6"></span>Wellness
       <span class="legend-dot" style="background:#10b981"></span>Recovery
       <span class="legend-dot" style="background:#0ea5e9"></span>Focus
-      <span class="legend-dot" style="background:#ef4444"></span>Burnout Risk
+      <span class="legend-dot" style="background:#ef4444"></span>Current Stress Pattern
     </div>
     <canvas id="trend-chart" height="180"></canvas>
     ${whyHTML}`;
@@ -1012,7 +1061,7 @@ function renderTrendChart() {
         mkDataset("Wellness",     wellnessData, "#8b5cf6"),
         mkDataset("Recovery",     recoveryData, "#10b981"),
         mkDataset("Focus",        focusData,    "#0ea5e9"),
-        mkDataset("Burnout Risk", burnoutData,  "#ef4444", true),
+        mkDataset("Current Stress Pattern", burnoutData,  "#ef4444", true),
       ],
     },
     options: {
@@ -1055,7 +1104,7 @@ function renderTrendChart() {
    ============================================================ */
 
 function renderKeyQuestions(scores, trendIntelligence) {
-  const { burnout_trajectory, workload_feasibility, focus_windows, intelligence_brief } = scores;
+  const { burnout_trajectory, workload_reflection, focus_windows, intelligence_brief } = scores;
 
   if (burnout_trajectory) {
     const urgency = burnout_trajectory.urgency || "low";
@@ -1071,14 +1120,14 @@ function renderKeyQuestions(scores, trendIntelligence) {
     if (rEl) rEl.textContent = burnout_trajectory.reason;
   }
 
-  if (workload_feasibility) {
+  if (workload_reflection) {
     const aEl = document.getElementById("qa-workload");
     const rEl = document.getElementById("qr-workload");
-    const qItem = document.getElementById("q-workload");
-    const answerClass = workload_feasibility.feasible ? "answer-ok" : "answer-high";
-    if (aEl) { aEl.textContent = workload_feasibility.answer; aEl.className = `question-a ${answerClass}`; }
-    if (rEl) rEl.textContent = workload_feasibility.reason;
-    if (qItem && !workload_feasibility.feasible) qItem.className = "question-item urgency-high";
+    // Deliberately no urgency styling and no ok/high colour. This card describes
+    // what you entered; it does not grade it, so nothing here should read as a
+    // verdict on whether your day is achievable.
+    if (aEl) { aEl.textContent = workload_reflection.answer; aEl.className = "question-a"; }
+    if (rEl) rEl.textContent = workload_reflection.reason;
   }
 
   if (focus_windows) {

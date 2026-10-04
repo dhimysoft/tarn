@@ -3,13 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AURA Intelligence — Daily Check-In</title>
-  <meta name="description" content="AURA Intelligence: check in your daily wellness signals and get burnout risk forecasting, recovery analysis, and focus optimization — powered by DHIMLUX Labs." />
-  <meta property="og:title" content="AURA Intelligence — Wellness Intelligence Platform" />
-  <meta property="og:description" content="Deterministic wellness scoring, burnout risk forecasting, and AI advisory insights. Powered by DHIMLUX Labs." />
+  <title>TARN — Daily Check-In</title>
+  <meta name="description" content="TARN: check in your daily wellness signals and get wellness pattern history, recovery analysis, and focus optimization — powered by DHIMLUX Labs." />
+  <meta property="og:title" content="TARN — Wellness Reflection Platform" />
+  <meta property="og:description" content="A private daily wellness check-in, wellness pattern history, and AI advisory insights. Powered by DHIMLUX Labs." />
   <meta property="og:type" content="website" />
   <meta name="theme-color" content="#070316" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌙</text></svg>" />
+  <script src="theme.js"></script>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -17,19 +18,23 @@
 
   <nav class="navbar">
     <div class="nav-brand">
-      <span class="brand-name">AURA</span>
-      <span class="brand-sub">Intelligence</span>
+      <span class="brand-name">TARN</span>
+      <span class="brand-sub">Wellness Reflection</span>
     </div>
     <div class="nav-links">
+      <a href="crisis.html" class="nav-link crisis-link">Get Immediate Help</a>
       <a href="dashboard.html" class="nav-link">Dashboard</a>
-    </div>
+          <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Switch theme">
+        <span class="icon-light" aria-hidden="true">&#9788;</span><span class="icon-dark" aria-hidden="true">&#9789;</span>
+      </button>
+</div>
   </nav>
 
   <main class="checkin-page">
 
     <div class="checkin-header">
-      <h1><span id="greeting">Good morning</span>,</h1>
-      <p class="checkin-subtitle">Six signals · thirty seconds · real intelligence.</p>
+      <h1><span id="greeting">Good morning</span></h1>
+      <p class="checkin-subtitle">Five signals · thirty seconds · private to you.</p>
       <div id="streak-display" class="streak-badge">Start your streak — check in daily</div>
     </div>
 
@@ -95,15 +100,24 @@
       </div>
 
       <button type="submit" id="analyze-btn" class="analyze-btn">
-        Analyze My Wellness →
+        View My Wellness Reflection →
       </button>
 
     </form>
 
     <p class="checkin-footer-note">
-      AURA Intelligence · Informational only. Not a substitute for professional health guidance.
+      TARN · Informational only. Not a substitute for professional health guidance.
     </p>
 
+
+    <!-- Product boundary notice. Required on the check-in screen so it is seen
+         before any data is entered, not buried in Settings. -->
+    <div class="product-notice" role="note">
+      TARN is a self-reflection and general wellness tool. It does not provide
+      medical advice, diagnosis, treatment, crisis monitoring, or emergency services.
+      Information entered into this application is not reviewed by a healthcare professional.
+      <a href="crisis.html">Get immediate help →</a>
+    </div>
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

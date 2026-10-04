@@ -3,13 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AURA Intelligence — Dashboard</title>
-  <meta name="description" content="AURA Intelligence dashboard: wellness score, burnout risk, recovery index, focus readiness, explainability, and AI advisory insights." />
-  <meta property="og:title" content="AURA Intelligence — Wellness Intelligence Platform" />
-  <meta property="og:description" content="Deterministic wellness scoring, burnout risk forecasting, and AI advisory insights. Powered by DHIMLUX Labs." />
+  <title>TARN — Dashboard</title>
+  <meta name="description" content="Your private daily wellness reflection, built only from the check-in answers you entered." />
+  <meta property="og:title" content="TARN — Wellness Reflection Platform" />
+  <meta property="og:description" content="A private daily wellness check-in, wellness pattern history, and AI advisory insights. Powered by DHIMLUX Labs." />
   <meta property="og:type" content="website" />
   <meta name="theme-color" content="#070316" />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌙</text></svg>" />
+  <script src="theme.js"></script>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -17,12 +18,16 @@
 
   <nav class="navbar">
     <div class="nav-brand">
-      <span class="brand-name">AURA</span>
-      <span class="brand-sub">Intelligence</span>
+      <span class="brand-name">TARN</span>
+      <span class="brand-sub">Wellness Reflection</span>
     </div>
     <div class="nav-links">
+      <a href="crisis.html" class="nav-link crisis-link">Get Immediate Help</a>
       <a href="index.html" class="nav-link checkin-cta">+ Check In</a>
-    </div>
+          <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Switch theme">
+        <span class="icon-light" aria-hidden="true">&#9788;</span><span class="icon-dark" aria-hidden="true">&#9789;</span>
+      </button>
+</div>
   </nav>
 
   <div id="dashboard-root" class="dashboard-page">
@@ -32,7 +37,7 @@
       <div class="dash-date-row">
         <div>
           <div class="dash-date" id="today-date">Loading...</div>
-          <div class="dash-subtitle">Wellness Intelligence · Today</div>
+          <div class="dash-subtitle">Wellness Reflection · Today</div>
         </div>
         <div class="streak-pill">
           <span>🔥</span>
@@ -52,36 +57,29 @@
           <span class="tier-badge" id="score-tier">--</span>
           <span class="score-delta" id="score-delta"></span>
         </div>
-        <div class="score-label">Wellness Score</div>
+        <div class="score-label">Daily Wellness Snapshot</div>
       </div>
-      <div class="score-confidence">
-        <div class="confidence-label">Confidence</div>
-        <div class="confidence-value" id="confidence-value">--%</div>
-        <div class="confidence-bar-wrap">
-          <div class="confidence-bar-fill" id="confidence-bar"></div>
-        </div>
-        <div class="confidence-reason" id="confidence-reason"></div>
-      </div>
+
     </div>
 
     <!-- ── Metrics Grid ── -->
     <div class="metrics-grid">
 
       <div class="metric-card" id="burnout-card">
-        <div class="metric-label">Burnout Risk</div>
+        <div class="metric-label">Current Stress Pattern</div>
         <div class="metric-risk-value" id="burnout-value">--</div>
         <div class="metric-sublabel">Stress · Sleep · Workload</div>
       </div>
 
       <div class="metric-card">
-        <div class="metric-label">Recovery Index</div>
+        <div class="metric-label">Rest and Recovery Check-In</div>
         <div class="metric-number" id="ri-value">0</div>
         <div class="progress-bar"><div class="progress-fill" id="ri-bar"></div></div>
         <div class="metric-sublabel">Sleep · Stress · Mood</div>
       </div>
 
       <div class="metric-card">
-        <div class="metric-label">Focus Readiness</div>
+        <div class="metric-label">Self-Reported Focus</div>
         <div class="metric-number" id="fr-value">0</div>
         <div class="progress-bar"><div class="progress-fill" id="fr-bar"></div></div>
         <div class="metric-sublabel">Time-of-day aware</div>
@@ -89,16 +87,16 @@
 
     </div>
 
-    <!-- ── Intelligence Brief ── -->
+    <!-- ── Wellness Summary ── -->
     <div class="intel-brief-card">
-      <div class="block-title">Today's Intelligence Brief</div>
+      <div class="block-title">Wellness Summary</div>
       <div class="brief-grid">
         <div class="brief-item">
           <div class="brief-item-label">Primary Strength</div>
           <div class="brief-item-value strength" id="brief-strength">--</div>
         </div>
         <div class="brief-item">
-          <div class="brief-item-label">Primary Risk</div>
+          <div class="brief-item-label">Area to Watch</div>
           <div class="brief-item-value risk" id="brief-risk">--</div>
         </div>
         <div class="brief-item brief-action">
@@ -110,7 +108,7 @@
 
     <!-- ── Focus Windows ── -->
     <div class="focus-windows-card">
-      <div class="block-title">Focus Forecast</div>
+      <div class="block-title">Preferred Focus Window</div>
       <div class="windows-grid">
         <div class="window-item peak">
           <div class="window-icon">🎯</div>
@@ -132,7 +130,7 @@
 
     <!-- ── Intelligence Narrative ── -->
     <div class="narrative-block">
-      <div class="block-title">Intelligence Summary</div>
+      <div class="block-title">Daily Reflection</div>
       <div class="narrative-text" id="burnout-narrative">Loading analysis...</div>
     </div>
 
@@ -143,22 +141,22 @@
       <div class="contributors" id="contributors">Loading...</div>
     </div>
 
-    <!-- ── Trend Intelligence ── -->
+    <!-- ── Wellness Pattern History ── -->
     <div class="trend-block" id="trend-section"></div>
 
     <!-- ── Key Questions ── -->
     <div class="key-questions-block">
-      <div class="block-title">Wellness Intelligence Q&amp;A</div>
+      <div class="block-title">Wellness Reflection</div>
       <div class="questions-grid">
 
         <div class="question-item" id="q-burnout">
-          <div class="question-q">Am I heading toward burnout?</div>
+          <div class="question-q">What patterns are visible in my recent check-ins?</div>
           <div class="question-a" id="qa-burnout">Analyzing...</div>
           <div class="question-reason" id="qr-burnout"></div>
         </div>
 
         <div class="question-item" id="q-workload">
-          <div class="question-q">Can I accomplish today's workload?</div>
+          <div class="question-q">How does today's workload feel?</div>
           <div class="question-a" id="qa-workload">Analyzing...</div>
           <div class="question-reason" id="qr-workload"></div>
         </div>
@@ -184,10 +182,10 @@
       </div>
     </div>
 
-    <!-- ── AI Insight ── -->
+    <!-- ── Personalized Reflection ── -->
     <div class="insight-block">
       <div class="insight-header">
-        <div class="block-title">AI Insight</div>
+        <div class="block-title">Personalized Reflection</div>
         <div class="ai-badge">
           <span class="ai-dot"></span>
           <span id="ai-model-badge">Gemini · Advisory Only</span>
@@ -210,7 +208,7 @@
 
     <!-- ── Footer ── -->
     <footer class="dash-footer">
-      <p>AURA Intelligence · Powered by DHIMLUX Labs</p>
+      <p>TARN · Powered by DHIMLUX Labs</p>
       <p class="footer-note">Informational only. Not a substitute for professional health or mental health guidance.</p>
     </footer>
 
