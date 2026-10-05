@@ -86,7 +86,7 @@ const ACTIVITIES = Object.freeze([
     purpose: "A short attention exercise that some people find helps them feel more present.",
     steps: Object.freeze([
       "Look around and silently name five things you can see.",
-      "Notice four things you can feel — your feet on the floor, a chair, fabric.",
+      "Notice four things you can feel: your feet on the floor, a chair, fabric.",
       "Listen for three things you can hear.",
       "Notice two things you can smell, or two smells you like.",
       "Name one thing you can taste, or one thing you are glad about.",
@@ -120,7 +120,7 @@ const ACTIVITIES = Object.freeze([
     steps: Object.freeze([
       "Write down the thought exactly as it turned up, in your own words.",
       "Write what makes that thought feel true right now.",
-      "Write anything that does not quite fit it — an exception, or another reading.",
+      "Write anything that does not quite fit it: an exception, or another reading.",
       "Write a sentence that takes both into account.",
       "Notice whether the feeling shifted at all. It is fine if it did not.",
     ]),
@@ -185,7 +185,7 @@ const ACTIVITIES = Object.freeze([
     purpose: "A prompt for identifying someone you might talk to.",
     steps: Object.freeze([
       "Think of one person you would not mind hearing from you today.",
-      "Decide what you would want them to know — it can be very short.",
+      "Decide what you would want them to know. It can be very short.",
       "Send it, or write it down to send later. Either counts.",
     ]),
     estimatedMinutes: 5,

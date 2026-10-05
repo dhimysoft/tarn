@@ -257,7 +257,7 @@ function acknowledgeNotInDanger(countryCode = "US") {
   return deepFreeze({
     message:
       "Thank you for telling me. You can keep using the reflection tools whenever " +
-      "you would like. The crisis resources stay available at any time — nothing " +
+      "you would like. The crisis resources stay available at any time. Nothing " +
       "here is monitored, so please reach out to a person if things change.",
     // Deliberately still present.
     crisisSupportHref: "/crisis.html",

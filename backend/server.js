@@ -154,7 +154,7 @@ function computeFocusWindows(focusReadiness, hour) {
   } else if (focusReadiness >= 50) {
     peak = hour < 14 ? `${formatHour(hour + 1)} – ${formatHour(hour + 3)}` : "Tomorrow morning";
   } else {
-    peak = "Tomorrow — prioritize sleep tonight";
+    peak = "Tomorrow, prioritize sleep tonight";
   }
 
   const breakStart = (hour < 12) ? 13 : Math.max(hour + 1, 13);
@@ -262,24 +262,24 @@ function computeIntelligenceBrief(signals, scores, explanation) {
   const hour = new Date().getHours();
   let recommended_action;
   if (scores.focus_readiness >= 70 && hour < 13) {
-    recommended_action = "Schedule demanding work before noon — focus readiness is high";
+    recommended_action = "Schedule demanding work before noon. Focus readiness is high";
   } else if (scores.burnout_risk === "High" || scores.burnout_risk === "Critical") {
-    recommended_action = "Protect recovery time today — reduce discretionary commitments";
+    recommended_action = "Protect recovery time today. Reduce discretionary commitments";
   } else if (scores.recovery_index < 50) {
-    recommended_action = "Prioritize passive recovery tonight — early sleep will compound positively";
+    recommended_action = "Prioritize passive recovery tonight. Early sleep will compound positively";
   } else if (signals.stress >= 7) {
     recommended_action = "Insert a deliberate 10-minute break every 90 minutes today";
   } else if (scores.focus_readiness >= 65) {
     recommended_action = "Use the current focus window for your highest-priority task";
   } else {
-    recommended_action = "Maintain your current rhythm — signals are in a stable range";
+    recommended_action = "Maintain your current rhythm. Signals are in a stable range";
   }
 
   return { primary_strength, primary_risk, recommended_action };
 }
 
 /* ============================================================
-   RECOMMENDATION ENGINE — Deterministic rules
+   RECOMMENDATION ENGINE: Deterministic rules
    ============================================================ */
 
 function buildRecommendations(signals, scores) {
@@ -290,33 +290,33 @@ function buildRecommendations(signals, scores) {
   if (signals.sleep <= 5)
     pool.push({ icon: "💤", title: "Address Sleep Deficit", body: "Sleep debt compounds daily. Even one extra hour tonight will measurably improve tomorrow's wellness and focus scores." });
   else if (signals.sleep <= 7)
-    pool.push({ icon: "🌙", title: "Optimize Sleep Window", body: "Sleep is slightly below optimal. A consistent sleep schedule — same time each night — improves recovery quality more than total hours alone." });
+    pool.push({ icon: "🌙", title: "Optimize Sleep Window", body: "Sleep is slightly below optimal. A consistent sleep schedule, same time each night, improves recovery quality more than total hours alone." });
 
   if (signals.stress >= 7)
     pool.push({ icon: "🧘", title: "Activate Recovery Mode", body: "Stress is in the high range. Schedule a deliberate 10-minute break every 90 minutes. Sustained high stress accelerates burnout faster than workload alone." });
   else if (signals.stress >= 5)
-    pool.push({ icon: "🌿", title: "Reduce Cognitive Load", body: "Moderate stress detected. Batch similar tasks together and defer low-priority decisions — cognitive switching cost adds up under stress." });
+    pool.push({ icon: "🌿", title: "Reduce Cognitive Load", body: "Moderate stress detected. Batch similar tasks together and defer low-priority decisions. Cognitive switching cost adds up under stress." });
 
   if (burnout_risk === "Critical" || burnout_risk === "High")
-    pool.push({ icon: "⚠️", title: "Burnout Risk Is Elevated", body: "Multiple compounding stress factors are active simultaneously. Protect recovery time today — reduce discretionary commitments and prioritize sleep tonight." });
+    pool.push({ icon: "⚠️", title: "Burnout Risk Is Elevated", body: "Multiple compounding stress factors are active simultaneously. Protect recovery time today. Reduce discretionary commitments and prioritize sleep tonight." });
 
   if (focus_readiness >= 75 && hour >= 8 && hour <= 11)
-    pool.push({ icon: "🎯", title: "Peak Focus Window — Act Now", body: "High focus readiness and morning prime window. Tackle your most cognitively demanding task in the next 90 minutes before the afternoon dip arrives." });
+    pool.push({ icon: "🎯", title: "Peak Focus Window: Act Now", body: "High focus readiness and morning prime window. Tackle your most cognitively demanding task in the next 90 minutes before the afternoon dip arrives." });
   else if (focus_readiness >= 70)
-    pool.push({ icon: "🎯", title: "High Focus Readiness", body: "Your cognitive resources are strong right now. Use this window for deep work — analysis, writing, or complex problem-solving." });
+    pool.push({ icon: "🎯", title: "High Focus Readiness", body: "Your cognitive resources are strong right now. Use this window for deep work such as analysis, writing, or complex problem-solving." });
   else if (focus_readiness < 45)
-    pool.push({ icon: "🔄", title: "Route to Lower-Demand Tasks", body: "Focus readiness is low today. Assign administrative, routine, or collaborative work to this period — save demanding tasks for when readiness recovers." });
+    pool.push({ icon: "🔄", title: "Route to Lower-Demand Tasks", body: "Focus readiness is low today. Assign administrative, routine, or collaborative work to this period. Save demanding tasks for when readiness recovers." });
 
   if (signals.energy <= 4)
-    pool.push({ icon: "⚡", title: "Restore Energy — Movement Over Caffeine", body: "Energy is depleted. A 20-minute walk or 10 minutes of movement is more effective at this level than caffeine, which may increase anxiety." });
+    pool.push({ icon: "⚡", title: "Restore Energy: Movement Over Caffeine", body: "Energy is depleted. A 20-minute walk or 10 minutes of movement is more effective at this level than caffeine, which may increase anxiety." });
 
   if (recovery_index < 50)
     pool.push({ icon: "🔋", title: "Recovery Is Insufficient", body: "Your recovery index indicates incomplete restoration between sessions. Prioritize passive recovery: no screens before bed, hydration, and an earlier sleep time." });
 
   if (signals.mood <= 3)
-    pool.push({ icon: "🎧", title: "Mood Support", body: "Low mood affects decision-making and cognitive performance. Physical movement — even a 10-minute walk — has documented, immediate mood-elevating effects." });
+    pool.push({ icon: "🎧", title: "Mood Support", body: "Low mood affects decision-making and cognitive performance. Physical movement, even a 10-minute walk, has documented, immediate mood-elevating effects." });
   else if (signals.mood >= 8)
-    pool.push({ icon: "✨", title: "High Mood — Leverage It", body: "You are in a positive affective state. Use this window for creative or high-stakes work that benefits from elevated mood." });
+    pool.push({ icon: "✨", title: "High Mood: Leverage It", body: "You are in a positive affective state. Use this window for creative or high-stakes work that benefits from elevated mood." });
 
   if (hour >= 13 && hour <= 15)
     pool.push({ icon: "☕", title: "Afternoon Dip Window", body: "You are in the natural 1–3 PM energy and focus dip. A 10–20 minute rest is physiologically more effective than pushing through with stimulants." });
@@ -427,7 +427,7 @@ function computeBurnoutTrajectory(burnout_risk, trend_intelligence) {
     if (recovDown)  reasons.push(`recovery down ${recovDown.pct_change}%`);
     return {
       heading_toward_burnout: true, urgency: "critical",
-      answer: "Yes — critical burnout conditions are active.",
+      answer: "Yes, critical burnout conditions are active.",
       reason: reasons.length
         ? `Compounding factors: ${reasons.join(", ")}.`
         : "All three burnout triggers (stress, sleep, workload) are simultaneously active.",
@@ -447,21 +447,21 @@ function computeBurnoutTrajectory(burnout_risk, trend_intelligence) {
       answer: "Trending toward elevated risk.",
       reason: reasons.length
         ? `Pattern detected: ${reasons.join(", ")}.`
-        : `Burnout risk is ${burnout_risk.toLowerCase()} — compounding factors are active.`,
+        : `Burnout risk is ${burnout_risk.toLowerCase()}. Compounding factors are active.`,
     };
   }
 
   if (burnout_risk === "Moderate") {
     return {
       heading_toward_burnout: false, urgency: "moderate",
-      answer: "Moderate risk — monitor over the next 2–3 days.",
+      answer: "Moderate risk: monitor over the next 2–3 days.",
       reason: "Current signals are manageable but recovery is not at full capacity.",
     };
   }
 
   return {
     heading_toward_burnout: false, urgency: "low",
-    answer: "No — signals are within a sustainable range.",
+    answer: "No. Signals are within a sustainable range.",
     reason: trend_intelligence
       ? "Trend data shows no escalating pattern across recent sessions."
       : "Stress, sleep, and workload signals are not triggering burnout conditions.",
@@ -505,13 +505,13 @@ function computeWorkloadFeasibility(signals, scores, workload_hours) {
   if (workload_hours > sustainableHours) {
     return {
       feasible: true, rating: "Stretched",
-      answer: "Achievable — at the edge of current capacity.",
+      answer: "Achievable, at the edge of current capacity.",
       reason: `${workload_hours}h is at your upper limit. Prioritize ruthlessly and protect your recovery window.`,
     };
   }
   return {
     feasible: true, rating: "Achievable",
-    answer: `Yes — ${workload_hours}h is within current capacity.`,
+    answer: `Yes, ${workload_hours}h is within current capacity.`,
     reason: "Today's workload aligns with your wellness signals. Protect your peak focus windows.",
   };
 }
@@ -526,7 +526,7 @@ function buildConfidenceReason(context) {
   if (streak >= 7)  return `Based on ${streak} consecutive days of wellness data.`;
   if (streak >= 4)  return `${streak}-day streak. Continue daily check-ins for higher accuracy.`;
   if (streak >= 2)  return `${streak} consecutive days logged.`;
-  if (histLen > 1)  return `${histLen} sessions on record — streak was broken. Daily consistency improves accuracy.`;
+  if (histLen > 1)  return `${histLen} sessions on record. The streak was broken. Daily consistency improves accuracy.`;
   return "First check-in. Accuracy grows after 3–7 consecutive days.";
 }
 

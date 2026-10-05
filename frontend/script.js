@@ -17,7 +17,7 @@ const SIGNAL_LABELS = {
 };
 
 /* ============================================================
-   WELLNESS ENGINE — Deterministic. No LLM. Fully auditable.
+   WELLNESS ENGINE: Deterministic. No LLM. Fully auditable.
    Ported from backend/server.js. Runs entirely in the browser.
    ============================================================ */
 
@@ -123,7 +123,7 @@ function computeFocusWindows(focusReadiness, hour) {
   } else if (focusReadiness >= 50) {
     peak = hour < 14 ? `${formatHour(hour + 1)} – ${formatHour(hour + 3)}` : "Tomorrow morning";
   } else {
-    peak = "Tomorrow — prioritize sleep tonight";
+    peak = "Tomorrow, prioritize sleep tonight";
   }
   // A break needs a full hour that still ends by the cutoff. Later than that
   // there is no sensible window to suggest, and formatHour() clamps anything
@@ -132,7 +132,7 @@ function computeFocusWindows(focusReadiness, hour) {
   const breakStart = (hour < 12) ? 13 : Math.max(hour + 1, 13);
   const break_window = (breakStart + 1 <= BREAK_CUTOFF_HOUR)
     ? `${formatHour(breakStart)} – ${formatHour(breakStart + 1)}`
-    : "Wind down — rest is your next step";
+    : "Wind down: rest is your next step";
   const recoveryStart = Math.max(19, hour + 3);
   const recovery = `After ${formatHour(recoveryStart)}`;
   return { peak, break_window, recovery };
@@ -161,7 +161,7 @@ function computeExplanation(signals) {
    REMOVED: computeConfidence() and buildConfidenceReason().
 
    The old dashboard showed a "Confidence" percentage with a progress bar. It
-   was not a confidence interval or any statistical quantity — it began at a
+   was not a confidence interval or any statistical quantity, it began at a
    hardcoded 65 and moved with the length of your check-in streak:
 
        let score = 65;
@@ -186,17 +186,17 @@ function computeIntelligenceBrief(signals, scores, explanation) {
   const hour = new Date().getHours();
   let recommended_action;
   if (scores.focus_readiness >= 70 && hour < 13) {
-    recommended_action = "You reported high focus — you may want to use the morning for demanding work";
+    recommended_action = "You reported high focus. You may want to use the morning for demanding work";
   } else if (scores.burnout_risk === "High" || scores.burnout_risk === "Critical") {
-    recommended_action = "Protect recovery time today — reduce discretionary commitments";
+    recommended_action = "Protect recovery time today. Reduce discretionary commitments";
   } else if (scores.recovery_index < 50) {
-    recommended_action = "Prioritize passive recovery tonight — early sleep will compound positively";
+    recommended_action = "Prioritize passive recovery tonight. Early sleep will compound positively";
   } else if (signals.stress >= 7) {
     recommended_action = "Insert a deliberate 10-minute break every 90 minutes today";
   } else if (scores.focus_readiness >= 65) {
     recommended_action = "Use the current focus window for your highest-priority task";
   } else {
-    recommended_action = "Maintain your current rhythm — signals are in a stable range";
+    recommended_action = "Maintain your current rhythm. Signals are in a stable range";
   }
   return { primary_strength, primary_risk, recommended_action };
 }
@@ -227,27 +227,27 @@ function buildRecommendations(signals, scores) {
   if (signals.sleep <= 3)
     pool.push({ icon: "💤", title: "Address Sleep Deficit", body: "Sleep debt compounds daily. Even one extra hour tonight will measurably improve tomorrow's wellness and focus scores." });
   else if (signals.sleep === 4)
-    pool.push({ icon: "🌙", title: "Optimize Sleep Window", body: "Sleep is slightly below optimal. A consistent sleep schedule — same time each night — improves recovery quality more than total hours alone." });
+    pool.push({ icon: "🌙", title: "Optimize Sleep Window", body: "Sleep is slightly below optimal. A consistent sleep schedule, same time each night, improves recovery quality more than total hours alone." });
   if (signals.stress >= 7)
     pool.push({ icon: "🧘", title: "Activate Recovery Mode", body: "Stress is in the high range. Schedule a deliberate 10-minute break every 90 minutes. Sustained high stress accelerates burnout faster than workload alone." });
   else if (signals.stress === 6)
-    pool.push({ icon: "🌿", title: "Reduce Cognitive Load", body: "Moderate stress detected. Batch similar tasks together and defer low-priority decisions — cognitive switching cost adds up under stress." });
+    pool.push({ icon: "🌿", title: "Reduce Cognitive Load", body: "Moderate stress detected. Batch similar tasks together and defer low-priority decisions. Cognitive switching cost adds up under stress." });
   if (burnout_risk === "Critical" || burnout_risk === "High")
-    pool.push({ icon: "⚠️", title: "Current Stress Pattern Is Elevated", body: "Multiple compounding stress factors are active simultaneously. Protect recovery time today — reduce discretionary commitments and prioritize sleep tonight." });
+    pool.push({ icon: "⚠️", title: "Current Stress Pattern Is Elevated", body: "Multiple compounding stress factors are active simultaneously. Protect recovery time today. Reduce discretionary commitments and prioritize sleep tonight." });
   if (focus_readiness >= 75 && hour >= 8 && hour <= 11)
-    pool.push({ icon: "🎯", title: "Peak Focus Window — Act Now", body: "You reported strong focus this morning window. Tackle your most cognitively demanding task in the next 90 minutes before the afternoon dip arrives." });
+    pool.push({ icon: "🎯", title: "Peak Focus Window: Act Now", body: "You reported strong focus this morning window. Tackle your most cognitively demanding task in the next 90 minutes before the afternoon dip arrives." });
   else if (focus_readiness >= 70)
-    pool.push({ icon: "🎯", title: "High Self-Reported Focus", body: "Your cognitive resources are strong right now. Use this window for deep work — analysis, writing, or complex problem-solving." });
+    pool.push({ icon: "🎯", title: "High Self-Reported Focus", body: "Your cognitive resources are strong right now. Use this window for deep work such as analysis, writing, or complex problem-solving." });
   else if (focus_readiness < 45)
-    pool.push({ icon: "🔄", title: "Route to Lower-Demand Tasks", body: "You reported lower focus today. You may want to consider administrative, routine, or collaborative work to this period — save demanding tasks for when readiness recovers." });
+    pool.push({ icon: "🔄", title: "Route to Lower-Demand Tasks", body: "You reported lower focus today. You may want to consider administrative, routine, or collaborative work to this period. Save demanding tasks for when readiness recovers." });
   if (signals.energy <= 4)
-    pool.push({ icon: "⚡", title: "Restore Energy — Movement Over Caffeine", body: "Energy is depleted. A 20-minute walk or 10 minutes of movement is more effective at this level than caffeine, which may increase anxiety." });
+    pool.push({ icon: "⚡", title: "Restore Energy: Movement Over Caffeine", body: "Energy is depleted. A 20-minute walk or 10 minutes of movement is more effective at this level than caffeine, which may increase anxiety." });
   if (recovery_index < 50)
     pool.push({ icon: "🔋", title: "Recovery Is Insufficient", body: "You reported lower rest than usualoration between sessions. Prioritize passive recovery: no screens before bed, hydration, and an earlier sleep time." });
   if (signals.mood <= 3)
-    pool.push({ icon: "🎧", title: "Mood Support", body: "Low mood affects decision-making and cognitive performance. Physical movement — even a 10-minute walk — has documented, immediate mood-elevating effects." });
+    pool.push({ icon: "🎧", title: "Mood Support", body: "Low mood affects decision-making and cognitive performance. Physical movement, even a 10-minute walk, has documented, immediate mood-elevating effects." });
   else if (signals.mood >= 8)
-    pool.push({ icon: "✨", title: "High Mood — Leverage It", body: "You are in a positive affective state. Use this window for creative or high-stakes work that benefits from elevated mood." });
+    pool.push({ icon: "✨", title: "High Mood: Leverage It", body: "You are in a positive affective state. Use this window for creative or high-stakes work that benefits from elevated mood." });
   if (hour >= 13 && hour <= 15)
     pool.push({ icon: "☕", title: "Afternoon Dip Window", body: "You are in the natural 1–3 PM energy and focus dip. A 10–20 minute rest is physiologically more effective than pushing through with stimulants." });
   return pool.slice(0, 3);
@@ -303,7 +303,7 @@ function computeEngineBurnoutTrajectory(burnout_risk, trend_intelligence) {
     if (recovDown) reasons.push(`recovery down ${recovDown.pct_change}%`);
     return {
       heading_toward_burnout: true, urgency: "critical",
-      answer: "Yes — critical burnout conditions are active.",
+      answer: "Yes, critical burnout conditions are active.",
       reason: reasons.length
         ? `Compounding factors: ${reasons.join(", ")}.`
         : "All three burnout triggers (stress, sleep, workload) are simultaneously active.",
@@ -327,13 +327,13 @@ function computeEngineBurnoutTrajectory(burnout_risk, trend_intelligence) {
   if (burnout_risk === "Moderate") {
     return {
       heading_toward_burnout: false, urgency: "moderate",
-      answer: "Moderate risk — monitor over the next 2–3 days.",
+      answer: "Moderate risk: monitor over the next 2–3 days.",
       reason: "Current signals are manageable but recovery is not at full capacity.",
     };
   }
   return {
     heading_toward_burnout: false, urgency: "low",
-    answer: "No — signals are within a sustainable range.",
+    answer: "No. Signals are within a sustainable range.",
     reason: trend_intelligence
       ? "Trend data shows no escalating pattern across recent sessions."
       : "Stress, sleep, and workload signals are not triggering burnout conditions.",
@@ -446,19 +446,19 @@ function computeLocalInsight({ wellness_score, tier, burnout_risk, recovery_inde
   if (burnout_risk === "Critical" || burnout_risk === "High") {
     parts.push(`Your recent entries show a ${burnout_risk.toLowerCase()} stress pattern, based only on what you reported.`);
   } else if (recovery_index >= 70) {
-    parts.push(`Your rest and recovery check-in is ${recovery_index}/100 — a summary of the sleep, stress and mood values you entered.`);
+    parts.push(`Your rest and recovery check-in is ${recovery_index}/100, a summary of the sleep, stress and mood values you entered.`);
   } else if (recovery_index < 50) {
     parts.push(`Your rest and recovery check-in is ${recovery_index}/100. You may want to consider what would help you rest.`);
   } else {
-    parts.push(`Recovery capacity is moderate — consistent sleep timing will compound positively over the next 2–3 days.`);
+    parts.push(`Recovery capacity is moderate. Consistent sleep timing will compound positively over the next 2–3 days.`);
   }
 
   if (focus_readiness >= 70) {
     parts.push("You reported feeling focused today.");
   } else if (delta != null && delta >= 5) {
-    parts.push(`Wellness improved ${delta} points from the previous session — maintain current patterns.`);
+    parts.push(`Wellness improved ${delta} points from the previous session. Maintain current patterns.`);
   } else if (delta != null && delta <= -5) {
-    parts.push(`Wellness declined ${Math.abs(delta)} points — monitor sleep and stress signals over the next 2 days.`);
+    parts.push(`Wellness declined ${Math.abs(delta)} points. Monitor sleep and stress signals over the next 2 days.`);
   } else {
     parts.push(`Track signals over the next 2–3 days to build your wellness pattern history.`);
   }
@@ -576,7 +576,7 @@ function initCheckinPage() {
   const streakEl = document.getElementById("streak-display");
   if (streakEl) {
     if (streak > 0) { streakEl.innerHTML = `🔥 Day ${streak} streak`; streakEl.classList.add("active"); }
-    else streakEl.textContent = "Start your streak — check in daily";
+    else streakEl.textContent = "Start your streak: check in daily";
   }
 
   ["sleep","stress","mood","energy","focus"].forEach((name) => {
@@ -738,7 +738,7 @@ function renderDashboard(session) {
           </div>
         </div>`).join("");
     } else {
-      recEl.innerHTML = `<p class="no-recs">Wellness signals look balanced — no specific interventions flagged.</p>`;
+      recEl.innerHTML = `<p class="no-recs">Wellness signals look balanced. No specific interventions flagged.</p>`;
     }
   }
 
@@ -798,7 +798,7 @@ function buildNarrative({ wellness_score, tier, burnout_risk, burnout_text, reco
   // "yesterday".
   if (delta != null && getSessions().length >= MIN_HISTORY_DAYS) {
     if (delta >= 5)
-      parts.push(`Wellness improved <strong>+${delta} pts</strong> since your last check-in — a meaningful positive shift.`);
+      parts.push(`Wellness improved <strong>+${delta} pts</strong> since your last check-in, a meaningful positive shift.`);
     else if (delta <= -5)
       parts.push(`Wellness declined <strong>${delta} pts</strong> since your last check-in. If this continues for 2+ days, consider adjusting your schedule.`);
     else if (delta !== 0)
@@ -871,7 +871,7 @@ function computeTrendSummary(sessions) {
     const dir  = top.invert ? (good ? "easing" : "rising")
                             : (good ? "improving" : "declining");
     const sign = top.pts > 0 ? "+" : "";
-    primaryInsight = `${top.label} is ${dir} — ${sign}${top.pts} pts versus your earlier check-ins.`;
+    primaryInsight = `${top.label} is ${dir}: ${sign}${top.pts} pts versus your earlier check-ins.`;
   }
 
   return { wellnessPts, recoveryPts, focusPts, burnoutPts, primaryInsight };
@@ -1135,7 +1135,7 @@ function renderTrendChart() {
           padding: 12,
           displayColors: true,
           boxWidth: 10, boxHeight: 10,
-          callbacks: { label: (c) => `  ${c.dataset.label}: ${c.raw ?? "—"}` },
+          callbacks: { label: (c) => `  ${c.dataset.label}: ${c.raw ?? "n/a"}` },
         },
       },
     },
